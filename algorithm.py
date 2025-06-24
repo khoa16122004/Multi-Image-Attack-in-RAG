@@ -168,14 +168,15 @@ class NSGAII:
         answer_file = os.path.join(self.log_dir, f"answers_{self.n_k}.json")
         
         # inference
-        final_selection_adv_img = self.final_selection()
+        final_selection_adv_img, retri_success = self.final_selection()
         adv_answer = self.fitness.reader.image_to_text(
             qs=self.fitness.question,
             img_files=self.fitness.top_adv_imgs + [final_selection_adv_img]
         )[0]
         answers = {
             "golden_answer": self.fitness.answer,
-            "adv_answer": adv_answer
+            "adv_answer": adv_answer,
+            "retri_success": retri_success
         }
         
         with open(answer_file, "w") as f:
