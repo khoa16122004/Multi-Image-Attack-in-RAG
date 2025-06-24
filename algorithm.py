@@ -172,7 +172,7 @@ class NSGAII:
         adv_answer = self.fitness.image_to_text(
             qs=self.question,
             adv_imgs =self.top_adv_imgs + [final_selection_adv_img]
-        )
+        )[0]
         answers = {
             "golden_answer": self.golden_answer,
             "adv_answer": adv_answer
