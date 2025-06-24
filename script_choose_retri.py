@@ -20,11 +20,15 @@ def main(args):
     llm = GPTService(model_name="gpt-4o")
     
     system_prompt = (
-        "You are a smart assistant. Your job is to extract the specific physical features mentioned in the question "
-        "that are most useful for retrieving relevant images. These should be short and descriptive terms like 'tail', 'claws', 'antennae', etc. "
-        "Do not include species names, color words, general descriptions, or stop words. "
-        "Only return the most useful physical feature for retrieval – nothing else."
+        "You are a smart assistant. Your task is to extract the most useful physical or behavioral feature mentioned in the question "
+        "that can help retrieve the most relevant images. These should be short, descriptive, and specific terms such as 'tail', 'claws', 'antennae', "
+        "'wings spread', 'flying', 'diving', or 'open mouth'. \n\n"
+        "Avoid including species names, color adjectives, vague descriptions, or stop words. Focus only on concrete **physical traits** or **behavioral states** "
+        "that are visually observable and useful for filtering images.\n\n"
+        "If the question refers to a particular action or state (e.g., 'underwing pattern when birds are flying'), then return the relevant state or action (e.g., 'flying').\n\n"
+        "Only return **one concise phrase** or keyword – the most useful one – and nothing else."
     )
+
     prompt_template = "Question: {question}"
     
     for sample_id in tqdm(range(len(loader))):    
