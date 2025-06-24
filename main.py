@@ -30,14 +30,14 @@ def main(args):
     for i in sample_ids:    
         # take data
         question, answer, query, golden_answers, gt_basenames, retri_basenames, retri_imgs = loader.take_retri_data(i)
-        golden_answer = fitness.reader(question, [retri_imgs[:args.n_k]])       
         # init fitness data
         top_adv_imgs = []
         for k in range(1, args.n_k):
             with open(os.path.join(result_dir, f"{args.retriever_name}_{args.reader_name}_{args.std}", str(i), f"adv_{k}.pkl"), "rb") as f:
                 top_adv_imgs.append(pickle.load(f))
         top_original_imgs = retri_imgs[:args.n_k]
-        
+        golden_answer = fitness.reader(question, top_original_imgs)       
+
         fitness.init_data(query, 
                           question, 
                           top_adv_imgs, # top_adv_imgs: I'_0 , I'_1, ..., I'_{nk-2}
