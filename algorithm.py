@@ -201,10 +201,8 @@ class NSGAII:
         valid_indices = np.where(self.best_retri_score < 1)[0]
         if len(valid_indices) > 0:
             best_idx = valid_indices[np.argmin(self.best_reader_score[valid_indices])]
-            print(best_idx)
         else:
             best_idx = np.argmin(self.best_retri_score)
-            print(best_idx)
         return self.rank_0_adv_imgs[best_idx]
 
         
