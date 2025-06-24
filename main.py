@@ -36,7 +36,7 @@ def main(args):
             with open(os.path.join(result_dir, f"{args.retriever_name}_{args.reader_name}_{args.std}", str(i), f"adv_{k}.pkl"), "rb") as f:
                 top_adv_imgs.append(pickle.load(f))
         top_original_imgs = retri_imgs[:args.n_k]
-        golden_answer = fitness.reader.image_to_text(question, [top_original_imgs])       
+        golden_answer = fitness.reader.image_to_text(question, top_original_imgs)       
 
         fitness.init_data(query, 
                           question, 
