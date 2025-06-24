@@ -4,8 +4,7 @@ import torch
 from PIL import Image
 import argparse
 import json
-sys.path.append('..')
-from utils import DataLoader
+from util import DataLoader, ImagesLoader
 from retriever import Retriever
 from reader import Reader
 from tqdm import tqdm
