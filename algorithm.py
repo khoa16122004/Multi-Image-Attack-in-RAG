@@ -169,7 +169,7 @@ class NSGAII:
         
         # inference
         final_selection_adv_img = self.final_selection()
-        adv_answer = self.fitness.image_to_text(
+        adv_answer = self.fitness.reader.image_to_text(
             qs=self.question,
             adv_imgs =self.top_adv_imgs + [final_selection_adv_img]
         )[0]
