@@ -17,7 +17,6 @@ def main(args):
 
     loader = DataLoader(path=args.annotation_path, img_dir=args.dataset_dir)
     retriever = Retriever(model_name=args.retriever_name)
-    reader = Reader(model_name=args.reader_name)
 
     llm = GPTService(model_name="gpt-4o")
     
@@ -57,16 +56,6 @@ def main(args):
         topk_values, topk_indices = torch.topk(sims, 5)
         topk_basenames = [basename_corpus[i] for i in topk_indices]
         topk_imgs = [corpus[i] for i in topk_indices]
-        
-        # vlm
-        topk_answers = []
-        for k in range(5):
-            imgs_k = topk_imgs[:k]
-            pred_answer = reader.image_to_text(
-                question,
-                imgs_k
-            )[0]
-            topk_answers.append(pred_answer)
 
 
         metadata = {
