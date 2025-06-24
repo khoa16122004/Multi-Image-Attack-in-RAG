@@ -179,7 +179,7 @@ class NSGAII:
         }
         
         with open(answer_file, "w") as f:
-            json.dump(answers, f)
+            json.dump(answers, f, indent=4)
         
         with open(adv_img_file, 'wb') as f:
             pickle.dump(final_selection_adv_img, f)
@@ -201,9 +201,11 @@ class NSGAII:
         valid_indices = np.where(self.best_retri_score < 1)[0]
         if len(valid_indices) > 0:
             best_idx = valid_indices[np.argmin(self.best_reader_score[valid_indices])]
+            success_full = True
         else:
+            success_full = False
             best_idx = np.argmin(self.best_retri_score)
-        return self.rank_0_adv_imgs[best_idx]
+        return self.rank_0_adv_imgs[best_idx], success_full
 
         
     

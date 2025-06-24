@@ -30,6 +30,7 @@ def main(args):
     for i in sample_ids:    
         # take data
         question, answer, query, gt_basenames, retri_basenames, retri_imgs = loader.take_retri_data(i)
+        
         # init fitness data
         top_adv_imgs = []
         for k in range(1, args.n_k):
