@@ -174,7 +174,7 @@ class NSGAII:
             img_files=self.fitness.top_adv_imgs + [final_selection_adv_img]
         )[0]
         answers = {
-            "golden_answer": self.golden_answer,
+            "golden_answer": self.fitness.golden_answer,
             "adv_answer": adv_answer
         }
         
