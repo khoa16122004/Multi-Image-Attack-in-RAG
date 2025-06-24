@@ -37,7 +37,7 @@ def main(args):
                 top_adv_imgs.append(pickle.load(f))
         top_original_imgs = retri_imgs[:args.n_k]
         print(top_original_imgs)
-        golden_answer = fitness.reader(question, top_original_imgs)       
+        golden_answer = fitness.reader(question, [top_original_imgs])       
 
         fitness.init_data(query, 
                           question, 
