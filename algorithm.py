@@ -7,6 +7,7 @@ import pickle
 from pymoo.util.nds.non_dominated_sorting import NonDominatedSorting
 from tqdm import tqdm
 from config import Config
+import json
 
 class NSGAII:
     def __init__(self, 
@@ -164,9 +165,22 @@ class NSGAII:
         img_pkl_file = os.path.join(self.log_dir, f"images_{self.n_k}.pkl")
         adv_img_file = os.path.join(self.log_dir, f"adv_{self.n_k}.pkl")
         adv_history_file = os.path.join(self.log_dir, f"adv_history_{self.n_k}.pkl")
+        answer_file = os.path.join(self.log_dir, f"answers_{self.n_k}.json")
         
-        
+
         final_selection_adv_img = self.final_selection()
+        adv_answer = self.fitness.image_to_text(
+            qs=self.question,
+            adv_imgs =self.top_adv_imgs + [final_selection_adv_img]
+        )
+        answers = {
+            "golden_answer": self.golden_answer,
+            "adv_answer": adv_answer
+        }
+        
+        with open(answer_file, "w") as f:
+            json.dump(answers, f)
+        
         with open(adv_img_file, 'wb') as f:
             pickle.dump(final_selection_adv_img, f)
 

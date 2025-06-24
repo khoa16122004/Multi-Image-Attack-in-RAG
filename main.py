@@ -22,18 +22,21 @@ def main(args):
     result_dir = f"attack_result"
     os.makedirs(result_dir, exist_ok=True)
     
-    for i in range(args.start_idx, len(loader)):    
+    # sample_path
+    with open(args.sample_path, "r") as f:
+        sample_ids = [int(line.strip()) for line in f]
+    
+    # for i in range(args.start_idx, len(loader)):    
+    for i in sample_ids:    
         # take data
-        question, answer, query, golden_answers, gt_basenames, retri_basenames, retri_imgs = loader.take_data(i)
-        json_path = os.path.join(args.reader_dir, str(i), "answers.json")
-       
+        question, answer, query, golden_answers, gt_basenames, retri_basenames, retri_imgs = loader.take_retri_data(i)
+        golden_answer = fitness.reader(question, [retri_imgs[:args.n_k]])       
         # init fitness data
         top_adv_imgs = []
         for k in range(1, args.n_k):
             with open(os.path.join(result_dir, f"{args.retriever_name}_{args.reader_name}_{args.std}", str(i), f"adv_{k}.pkl"), "rb") as f:
                 top_adv_imgs.append(pickle.load(f))
         top_original_imgs = retri_imgs[:args.n_k]
-        golden_answer = golden_answers[:args.n_k] 
         
         fitness.init_data(query, 
                           question, 
@@ -66,6 +69,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--sample_path", type=str)
     parser.add_argument("--result_clean_dir", type=str, required=True)
     parser.add_argument("--reader_name", type=str, default="llava")
     parser.add_argument("--retriever_name", type=str, default="clip")
