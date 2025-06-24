@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 
 # Tạo loader
-loader = DataLoader(retri_dir="retri_llava_clip")
+loader = DataLoader(retri_dir="result_llava_clip")
 
 # Giao diện Streamlit
 st.title("Sample Retrieval Viewer")
