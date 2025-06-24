@@ -14,7 +14,7 @@ def main(args):
     output_dir = f"result_{args.reader_name}_{args.retriever_name}"
     os.makedirs(output_dir, exist_ok=True)
 
-    loader = DataLoader(path=args.annotation_path, img_dir=args.dataset_dir)
+    loader = ImagesLoader(path=args.annotation_path, img_dir=args.dataset_dir)
     retriever = Retriever(model_name=args.retriever_name)
 
     llm = GPTService(model_name="gpt-4o")
