@@ -167,7 +167,7 @@ class NSGAII:
         adv_history_file = os.path.join(self.log_dir, f"adv_history_{self.n_k}.pkl")
         answer_file = os.path.join(self.log_dir, f"answers_{self.n_k}.json")
         
-
+        # inference
         final_selection_adv_img = self.final_selection()
         adv_answer = self.fitness.image_to_text(
             qs=self.question,
