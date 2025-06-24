@@ -11,7 +11,7 @@ from tqdm import tqdm
 from llm_service import LlamaService, GPTService
 import pickle 
 def main(args):
-    output_dir = f"result_{args.reader_name}_{args.retriever_name}"
+    output_dir = f"result_{args.retriever_name}"
     os.makedirs(output_dir, exist_ok=True)
 
     loader = ImagesLoader(path=args.annotation_path, img_dir=args.dataset_dir)
@@ -84,7 +84,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--annotation_path", type=str, required=True)
     parser.add_argument("--dataset_dir", type=str, required=True)
-    parser.add_argument("--reader_name", type=str, default="llava")
     parser.add_argument("--retriever_name", type=str, default="clip")
     parser.add_argument("--w", type=int, default=312)
     parser.add_argument("--h", type=int, default=312)
