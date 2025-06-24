@@ -50,6 +50,9 @@ class Reader(torch.nn.Module):
         all_outputs = []
 
         for topk_imgs in img_files:
+            print(prompt)
+            print(topk_imgs)
+            print(self.answer)
             score = self.model.compute_log_prob(prompt, topk_imgs, self.answer)
             all_outputs.append(score)
 
