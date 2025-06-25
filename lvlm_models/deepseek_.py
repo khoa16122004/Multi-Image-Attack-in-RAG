@@ -1,19 +1,19 @@
-from deepseek_vl.models import VLChatProcessor, MultiModalityCausalLM
-from deepseek_vl.utils.io import load_pil_images
-
 import torch
+import math
+from deepseek_vl.models import VLChatProcessor, MultiModalityCausalLM
 from transformers import AutoModelForCausalLM
 
 class DeepSeek:
     def __init__(self, pretrained):
-        # deepseek-vl-7b-chat
         self.vl_chat_processor: VLChatProcessor = VLChatProcessor.from_pretrained(f"deepseek-ai/{pretrained}")
         self.tokenizer = self.vl_chat_processor.tokenizer
         
-        self.vl_gpt: MultiModalityCausalLM = AutoModelForCausalLM.from_pretrained(f"deepseek-ai/{pretrained}", trust_remote_code=True)
+        self.vl_gpt: MultiModalityCausalLM = AutoModelForCausalLM.from_pretrained(
+            f"deepseek-ai/{pretrained}",
+            trust_remote_code=True
+        )
         self.vl_gpt.to(torch.bfloat16).cuda().eval()
-        
-        
+
     def inference(self, qs, img_files):
         conversation = [
             {
@@ -46,6 +46,42 @@ class DeepSeek:
 
         answer = self.tokenizer.decode(outputs[0].cpu().tolist(), skip_special_tokens=True)
         return [answer]
-        
-        
-        
+
+    def compute_log_prob(self, question, imgs, answer):
+        # Build conversation
+        conversation = [
+            {
+                "role": "User",
+                "content": question,
+                "images": imgs
+            },
+            {
+                "role": "Assistant",
+                "content": answer
+            }
+        ]
+        inputs = self.vl_chat_processor(
+            conversations=conversation,
+            images=imgs,
+            force_batchify=True
+        ).to(self.vl_gpt.device)
+
+        labels = inputs.input_ids.clone()
+        # Mask out the question part — leave only answer for loss
+        sep_index = (labels != -100).nonzero(as_tuple=True)[1].min().item()
+        labels[0, :sep_index] = -100
+
+        with torch.no_grad():
+            outputs = self.vl_gpt(
+                input_ids=inputs.input_ids,
+                attention_mask=inputs.attention_mask,
+                pixel_values=inputs.pixel_values,
+                labels=labels
+            )
+            loss = outputs.loss
+
+        answer_token_len = (labels != -100).sum().item()
+        total_log_prob = -loss.item() * answer_token_len
+        prob = math.exp(total_log_prob)
+
+        return prob
