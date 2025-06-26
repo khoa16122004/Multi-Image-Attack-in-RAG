@@ -154,3 +154,37 @@ def greedy_selection(scores):
         success_retri = False
         best_idx = np.argmin(scores[:, 0])
     return scores[best_idx], success_retri
+
+def get_prompt_compare_answer(gt_answer, model_answer, question):
+    system_prompt = (
+        "You are an expert evaluator. Your task is to evaluate how well an answer matches the ground truth answer for a given question. "
+        "Score the model answer from 0 to 1 based on relevance, accuracy, completeness, and fluency compared to the ground truth. "
+        "Only return the score in this exact format: {\"score\": float}."
+        "Return only the JSON. Do not explain anything else."
+    )
+
+    user_prompt = f"""
+Question:
+{question}
+
+Ground Truth Answer:
+{gt_answer}
+
+Model Answer:
+{model_answer}
+
+Give a single score between 0 and 1 in the format:
+{{"score": float}}
+"""
+    return system_prompt, user_prompt
+
+def parse_score(llm_output: str) -> float:
+    try:
+        score_dict = json.loads(llm_output)
+        score = float(score_dict["score"])
+        return score
+    except Exception as e:
+        print("Error parsing score:", e)
+        print("LLM output was:", llm_output)
+        return None
+  
