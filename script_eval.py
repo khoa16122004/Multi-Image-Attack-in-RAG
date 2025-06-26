@@ -102,14 +102,13 @@ def main(args):
         
         adv_sims = retriever(query, top_adv_imgs).cpu().tolist() # tensor([[0.3057], [0.3057]], device='cuda:0', dtype=torch.float16)
         adv_sims = [item[0] for item in adv_sims]
-        print(adv_sims)
-        raise
         all_imgs = clean_imgs + top_adv_imgs
         all_sims = clean_sims + adv_sims
-        # sort with highest args.k imgs
-        #### your code here
-        # ...
-        topk_imgs = all_imgs_sorted[n_k]
+        sorted_indices = sorted(range(len(all_sims)), key=lambda i: all_sims[i], reverse=True)
+        top_k_imgs = [all_imgs[i] for i in sorted_indices[:args.k]]
+        top_k_sims = [all_sims[i] for i in sorted_indices[:args.k]]
+        print(all_sims)
+        print(top_k_sims)
         adv_answer = reader.image_to_text(question, topk_imgs)[0]
         
         ## end-to-end performance score
