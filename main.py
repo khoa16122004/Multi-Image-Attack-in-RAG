@@ -19,7 +19,7 @@ def main(args):
                          )
     
     # result_dir
-    result_dir = f"attack_result"
+    result_dir = f"attack_result_usingquestion={args.using_question}"
     os.makedirs(result_dir, exist_ok=True)
     
     # sample_path
@@ -82,6 +82,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_iter", type=int, default=100, help="Maximum iterations")
     parser.add_argument("--std", type=float, default=0.1, help="Standard deviation for initialization")
     parser.add_argument("--start_idx", type=int, default=0)
+    parser.add_argument("--using_question", type=int, default=1)
     
     args = parser.parse_args()
     main(args)
