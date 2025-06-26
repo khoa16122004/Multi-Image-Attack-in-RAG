@@ -36,6 +36,6 @@ for sample_id in tqdm(sample_ids):
 
 all_scores = np.array(all_scores)
 average_scores = np.mean(all_scores, axis=0)
-average_success_retri = success_retri / len(sample_ids)
+average_success_retri = success_retri_score / len(sample_ids)
 print(average_scores)    
 print(average_success_retri)
