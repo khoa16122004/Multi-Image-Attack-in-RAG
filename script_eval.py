@@ -10,7 +10,7 @@ sample_id = 0
 
 # calculate the L_topi and D_topi
 
-scores_path = "attack_result/{retriever_name}_{reader_name}_{std}/{sample_id}/scores_{n_k}.pkl"
+scores_path = f"attack_result/{retriever_name}_{reader_name}_{std}/{sample_id}/scores_{n_k}.pkl"
 with open(scores_path, "rb") as f:
     scores = pickle.load(f)
     scores = arkiv_proccess(scores)
