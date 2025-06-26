@@ -16,6 +16,7 @@ with open(scores_path, "rb") as f:
     scores = arkiv_proccess(scores)
 
     final_front_score = scores[-1]
+    print("Final score: ", final_front_score)
     selected_idx = greedy_selection(final_front_score)
     selected_score = final_front_score[selected_idx]
     print(selected_score)
