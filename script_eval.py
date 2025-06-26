@@ -14,7 +14,7 @@ run_path = "run.txt"
 
 # data
 all_scores = []
-success_retri = 0
+success_retri_score = 0
 
 # run_path
 with open(run_path, "r") as f:
@@ -33,7 +33,7 @@ for sample_id in tqdm(sample_ids):
         all_scores.append(selected_scores)
 
         if success_retri == True:
-            success_retri += 1
+            success_retri_score += 1
 
 all_scores = np.array(all_scores)
 average_scores = np.mean(all_scores, axis=0)
