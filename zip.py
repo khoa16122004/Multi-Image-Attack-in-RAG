@@ -11,4 +11,4 @@ def zip_folder(folder_path, output_zip_path):
                 zipf.write(file_path, arcname=arcname)
 
 # Ví dụ sử dụng
-zip_folder('attack_result', 'attack_result.zip')
+zip_folder('result_usingquery=0_clip', 'result_usingquery=0_clip.zip')
