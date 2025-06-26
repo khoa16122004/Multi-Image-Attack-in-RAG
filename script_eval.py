@@ -6,6 +6,7 @@ n_k = 1
 retriever_name = "clip"
 reader_name = "llava-one"
 std = 0.05
+sample_id = 0
 
 # calculate the L_topi and D_topi
 
