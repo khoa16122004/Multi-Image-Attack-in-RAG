@@ -107,10 +107,8 @@ def main(args):
         sorted_indices = sorted(range(len(all_sims)), key=lambda i: all_sims[i], reverse=True)
         top_k_imgs = [all_imgs[i] for i in sorted_indices[:n_k]]
         top_k_sims = [all_sims[i] for i in sorted_indices[:n_k]]
-        print(all_sims)
-        print(top_k_sims)
-        raise
-        adv_answer = reader.image_to_text(question, topk_imgs)[0]
+
+        adv_answer = reader.image_to_text(question, top_k_imgs)[0]
         
         ## end-to-end performance score
         system_prompt, user_prompt = get_prompt_compare_answer(golden_answer, adv_answer, question)
@@ -131,6 +129,8 @@ def main(args):
     average_success_retri = success_retri_score / len(sample_ids)
     average_end_to_end_assumption_scores = end_to_end_assumption_scores / len(sample_ids)
     average_end_to_end_assumption_bertscores = end_to_end_assumption_bertscores / len(sample_ids)
+    average_end_to_end_scores = end_to_end_scores / len(sample_ids)
+    average_end_to_end_bertscores = end_to_end_bertscores / len(sample_ids)
     attack_success_rate = attack_success / len(sample_ids)
 
     print("Scores: ", average_scores)    
@@ -138,6 +138,8 @@ def main(args):
     print("Attack Success Rate: ", attack_success_rate)
     print("End-to-End (Assumption) GPT-scores: ", average_end_to_end_assumption_scores)
     print("End-to-End (Assumption) Bertscores: ", average_end_to_end_assumption_bertscores)
+    print("End-to-End (Real) GPT-scores: ", average_end_to_end_scores)
+    print("End-to-End (Real) Bertscores: ", average_end_to_end_bertscores)
 
 
 
