@@ -95,7 +95,7 @@ def main(args):
         question, answer, query, gt_basenames, retri_basenames, clean_imgs = loader.take_retri_data(sample_id)
         
         top_adv_imgs = []
-        for k in range(1, n_k):
+        for k in range(1, n_k + 1):
             adv_img_paths = f"attack_result/{retriever_name}_{reader_name}_{std}/{sample_id}/adv_{k}.pkl"
             with open(adv_img_paths, "rb") as f:
                 top_adv_imgs.append(pickle.load(f))
