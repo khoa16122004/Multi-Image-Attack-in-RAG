@@ -35,7 +35,7 @@ for sample_id in tqdm(sample_ids):
         scores = arkiv_proccess(scores) # #
         
     # # # metadata
-    metadata_path = f"result_{reader_name}/{sample_id}/metadata.json"    
+    metadata_path = f"result_{retriever_name}/{sample_id}/metadata.json"    
     with open(metadata_path, "r") as f:
         meta_data = json.load(f)
         question = meta_data["question"] # #
