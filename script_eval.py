@@ -17,6 +17,7 @@ run_path = "run.txt"
 all_scores = [] # all scores of L_topi, D_topi
 success_retri_score = 0 # retri success at top-i
 end_to_end_assumption_scores = 0
+attack_success = 0
 
 # run_path
 with open(run_path, "r") as f:
@@ -53,6 +54,8 @@ for sample_id in tqdm(sample_ids):
     selected_scores, success_retri = greedy_selection(final_front_score)
     all_scores.append(selected_scores)
     if success_retri == True:
+        if selected_scores[1] < 1:
+            attack_success += 1
         success_retri_score += 1
             
     # End-To-End-performance with assumption that top-{i-1} is successfulled pooled        
@@ -68,6 +71,9 @@ for sample_id in tqdm(sample_ids):
 all_scores = np.array(all_scores)
 average_scores = np.mean(all_scores, axis=0)
 average_success_retri = success_retri_score / len(sample_ids)
-print(average_scores)    
-print(average_success_retri)
-print(end_to_end_assumption_scores)
+average_end_to_end_assumption_scores = end_to_end_assumption_scores / len(sample_ids)
+attack_success_rate = attack_success / len(sample_ids)
+print("Scores: ", average_scores)    
+print("Success Retri: ", average_success_retri)
+print("Attack Success Rate: ", attack_success_rate)
+print("End-to-End (Assumption scores): ", end_to_end_assumption_scores)
