@@ -29,7 +29,6 @@ for sample_id in tqdm(sample_ids):
 
         final_front_score = np.array(scores[-1])
         selected_scores, success_retri = greedy_selection(final_front_score)
-        print(selected_scores)
         all_scores.append(selected_scores)
 
         if success_retri == True:
