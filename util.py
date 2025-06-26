@@ -147,7 +147,7 @@ class ImagesLoader:
     
 def greedy_selection(scores):
     valid_indices = np.where(scores[:, 0] < 1)[0]
-    print(valid_indices)
+    print(len(valid_indices))
     if len(valid_indices) > 0:
         success_retri = True
         best_idx = valid_indices[np.argmin(scores[:, 1][valid_indices])]
