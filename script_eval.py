@@ -100,7 +100,7 @@ def main(args):
             with open(adv_img_paths, "rb") as f:
                 top_adv_imgs.append(pickle.load(f))
         
-        adv_sims = retriever(query, top_adv_imgs).cpu().to_list() # tensor([[0.3057], [0.3057]], device='cuda:0', dtype=torch.float16)
+        adv_sims = retriever(query, top_adv_imgs).cpu().tolist() # tensor([[0.3057], [0.3057]], device='cuda:0', dtype=torch.float16)
         print(adv_sims)
         raise
         all_imgs = clean_imgs + top_adv_imgs
