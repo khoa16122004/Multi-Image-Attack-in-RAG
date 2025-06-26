@@ -105,8 +105,8 @@ def main(args):
         all_imgs = clean_imgs + top_adv_imgs
         all_sims = clean_sims + adv_sims
         sorted_indices = sorted(range(len(all_sims)), key=lambda i: all_sims[i], reverse=True)
-        top_k_imgs = [all_imgs[i] for i in sorted_indices[:args.k]]
-        top_k_sims = [all_sims[i] for i in sorted_indices[:args.k]]
+        top_k_imgs = [all_imgs[i] for i in sorted_indices[:n_k]]
+        top_k_sims = [all_sims[i] for i in sorted_indices[:n_k]]
         print(all_sims)
         print(top_k_sims)
         raise
