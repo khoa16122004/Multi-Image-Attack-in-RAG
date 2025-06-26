@@ -17,8 +17,7 @@ with open(scores_path, "rb") as f:
 
     final_front_score = np.array(scores[-1])
     print("Final score: ", final_front_score)
-    selected_idx, success_retri = greedy_selection(final_front_score)
-    selected_score = final_front_score[selected_idx]
-    print(selected_score)
+    scores, success_retri = greedy_selection(final_front_score)
+    print(scores, success_retri)
     # greedy selection
     
