@@ -16,6 +16,7 @@ run_path = "run.txt"
 # data
 all_scores = [] # all scores of L_topi, D_topi
 success_retri_score = 0 # retri success at top-i
+end_to_end_assumption_scores = 0
 
 # run_path
 with open(run_path, "r") as f:
@@ -56,15 +57,12 @@ for sample_id in tqdm(sample_ids):
             
     # End-To-End-performance with assumption that top-{i-1} is successfulled pooled        
     system_prompt, user_prompt = get_prompt_compare_answer(golden_answer, adv_answer, question)
-
     llm_output = llm.text_to_text(
         system_prompt=system_prompt,
         prompt=user_prompt,
     ).strip()
-
     score = parse_score(llm_output)
-    print("Score:", score)
-    raise
+    end_to_end_assumption_scores += score
         
 
 all_scores = np.array(all_scores)
@@ -72,3 +70,4 @@ average_scores = np.mean(all_scores, axis=0)
 average_success_retri = success_retri_score / len(sample_ids)
 print(average_scores)    
 print(average_success_retri)
+print(end_to_end_assumption_scores)
