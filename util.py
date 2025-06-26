@@ -144,3 +144,13 @@ class ImagesLoader:
     
     def __len__(self):
         return len(self.data)
+    
+def greedy_selection(scores):
+    valid_indices = np.where(scores[:, 0] < 1)[0]
+    if len(valid_indices) > 0:
+        success_retri = True
+        best_idx = valid_indices[np.argmin(scores[:, 1][valid_indices])]
+    else:
+        success_retri = False
+        best_idx = np.argmin(scores[:, 0])
+    return scores[best_idx], success_retri
