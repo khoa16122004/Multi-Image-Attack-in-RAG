@@ -15,7 +15,7 @@ with open(scores_path, "rb") as f:
     scores = pickle.load(f)
     scores = arkiv_proccess(scores)
 
-    final_front_score = scores[-1]
+    final_front_score = np.array(scores[-1])
     print("Final score: ", final_front_score)
     selected_idx = greedy_selection(final_front_score)
     selected_score = final_front_score[selected_idx]
