@@ -75,6 +75,10 @@ def main(args):
         score = get_bertscore(golden_answer, adv_answer)
         end_to_end_assumption_bertscores += score
         
+        # End-To-End-performance-scores
+        # End-To-End-performance-scores
+        
+        
     all_scores = np.array(all_scores)
     average_scores = np.mean(all_scores, axis=0)
     average_success_retri = success_retri_score / len(sample_ids)

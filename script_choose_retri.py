@@ -11,25 +11,27 @@ from tqdm import tqdm
 from llm_service import LlamaService, GPTService
 import pickle 
 def main(args):
-    output_dir = f"result_{args.retriever_name}"
+    
+    output_dir = f"result_usingquery={args.using_query}_{args.retriever_name}"
     os.makedirs(output_dir, exist_ok=True)
 
     loader = ImagesLoader(path=args.annotation_path, img_dir=args.dataset_dir)
     retriever = Retriever(model_name=args.retriever_name)
 
-    llm = GPTService(model_name="gpt-4o")
-    
-    system_prompt = (
-        "You are a smart assistant. Your task is to extract the most useful physical or behavioral feature mentioned in the question "
-        "that can help retrieve the most relevant images. These should be short, descriptive, and specific terms such as 'tail', 'claws', 'antennae', "
-        "'wings spread', 'flying', 'diving', or 'open mouth'. \n\n"
-        "Avoid including species names, color adjectives, vague descriptions, or stop words. Focus only on concrete **physical traits** or **behavioral states** "
-        "that are visually observable and useful for filtering images.\n\n"
-        "If the question refers to a particular action or state (e.g., 'underwing pattern when birds are flying'), then return the relevant state or action (e.g., 'flying').\n\n"
-        "Only return **one concise phrase** or keyword – the most useful one – and nothing else."
-    )
+    if args.using_query == 1:
+        llm = GPTService(model_name="gpt-4o")
+        
+        system_prompt = (
+            "You are a smart assistant. Your task is to extract the most useful physical or behavioral feature mentioned in the question "
+            "that can help retrieve the most relevant images. These should be short, descriptive, and specific terms such as 'tail', 'claws', 'antennae', "
+            "'wings spread', 'flying', 'diving', or 'open mouth'. \n\n"
+            "Avoid including species names, color adjectives, vague descriptions, or stop words. Focus only on concrete **physical traits** or **behavioral states** "
+            "that are visually observable and useful for filtering images.\n\n"
+            "If the question refers to a particular action or state (e.g., 'underwing pattern when birds are flying'), then return the relevant state or action (e.g., 'flying').\n\n"
+            "Only return **one concise phrase** or keyword – the most useful one – and nothing else."
+        )
 
-    prompt_template = "Question: {question}"
+        prompt_template = "Question: {question}"
     
     for sample_id in tqdm(range(len(loader))):    
         question, answer, paths, gt_paths = loader.take_data(sample_id)
@@ -37,10 +39,14 @@ def main(args):
         gt_basenames = [os.path.basename(path) for path in gt_paths]
         
         # extract keywords
-        keyword_query = llm.text_to_text(
-            system_prompt=system_prompt,
-            prompt=prompt_template.format(question=question),
-        ).strip()
+        if args.using_query == 1:
+            query = llm.text_to_text(
+                system_prompt=system_prompt,
+                prompt=prompt_template.format(question=question),
+            ).strip()
+        
+        else:
+            query = question
         
         # sims retri
         corpus = []
@@ -55,7 +61,7 @@ def main(args):
 
         
         # retri
-        sims = retriever(keyword_query, corpus).flatten()
+        sims = retriever(query, corpus).flatten()
         topk_values, topk_indices = torch.topk(sims, 5)
         topk_basenames = [basename_corpus[i] for i in topk_indices]
         topk_imgs = [corpus[i] for i in topk_indices]
@@ -64,7 +70,7 @@ def main(args):
         metadata = {
             "question": question,
             "answer": answer,
-            "keyword": keyword_query, 
+            "keyword": query, 
             "gt_basenames": gt_basenames[:5],
             "topk_basenames": topk_basenames,
             "sims": topk_values.cpu().tolist(),
@@ -86,6 +92,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--using_query", type=int, default=1)
     parser.add_argument("--annotation_path", type=str, required=True)
     parser.add_argument("--dataset_dir", type=str, required=True)
     parser.add_argument("--retriever_name", type=str, default="clip")
