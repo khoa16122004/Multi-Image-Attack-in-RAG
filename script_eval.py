@@ -1,7 +1,7 @@
 import pickle
 import numpy as np
 import json
-from util import DataLoader, arkiv_proccess, greedy_selection, get_prompt_compare_answer, parse_score
+from util import DataLoader, arkiv_proccess, greedy_selection, get_prompt_compare_answer, parse_score, get_bertscore
 from tqdm import tqdm
 from llm_service import GPTService
 
@@ -17,7 +17,9 @@ run_path = "run.txt"
 all_scores = [] # all scores of L_topi, D_topi
 success_retri_score = 0 # retri success at top-i
 end_to_end_assumption_scores = 0
+end_to_end_assumption_bertscores = 0
 attack_success = 0
+
 
 # run_path
 with open(run_path, "r") as f:
@@ -66,13 +68,18 @@ for sample_id in tqdm(sample_ids):
     ).strip()
     score = parse_score(llm_output)
     end_to_end_assumption_scores += score
-        
-
+    
+    # BertScore-End-To-End-performance with assumption that top-{i-1} is successfulled pooled        
+    score = get_bertscore(golden_answer, adv_answer)
+    end_to_end_assumption_bertscores += score
+    
 all_scores = np.array(all_scores)
 average_scores = np.mean(all_scores, axis=0)
 average_success_retri = success_retri_score / len(sample_ids)
 average_end_to_end_assumption_scores = end_to_end_assumption_scores / len(sample_ids)
+average_end_to_end_assumption_bertscores = end_to_end_assumption_bertscores / len(sample_ids)
 attack_success_rate = attack_success / len(sample_ids)
+
 print("Scores: ", average_scores)    
 print("Success Retri: ", average_success_retri)
 print("Attack Success Rate: ", attack_success_rate)

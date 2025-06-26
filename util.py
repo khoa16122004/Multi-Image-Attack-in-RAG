@@ -187,4 +187,8 @@ def parse_score(llm_output: str) -> float:
         print("Error parsing score:", e)
         print("LLM output was:", llm_output)
         return None
-  
+
+from bert_score import score
+def get_bertscore(gt_answer, model_answer):
+    P, R, F1 = score([model_answer], [gt_answer], lang="en", verbose=False)
+    return F1.item()
