@@ -5,7 +5,8 @@ from util import DataLoader, arkiv_proccess, greedy_selection, get_prompt_compar
 from tqdm import tqdm
 from llm_service import GPTService
 import argparse
-
+from reader import Reader
+from retriever import Retriever
 
 def main(args):
     # variable
@@ -16,7 +17,7 @@ def main(args):
     run_path = args.run_path
 
     # model
-    loader = DataLoader(retri_dir=args.result_clean_dir)
+    loader = DataLoader(retri_dir=f"result_{retriever_name}")
     reader = Reader(reader_name)
     retriever = Retriever(retriever_name)
 
@@ -91,7 +92,7 @@ def main(args):
             meta_data = json.load(f)
             question = meta_data["question"] # #
             clean_sims = meta_data["sims"]
-        question, answer, query, gt_basenames, retri_basenames, clean_imgs = loader.take_retri_data(i)
+        question, answer, query, gt_basenames, retri_basenames, clean_imgs = loader.take_retri_data(sample_id)
         
         top_adv_imgs = []
         for k in range(1, n_k):
@@ -100,6 +101,7 @@ def main(args):
                 top_adv_imgs.append(pickle.load(f))
         
         adv_sims = retriever(query, top_adv_imgs)
+        print(len(top_adv_imgs))
         print(adv_sims)
         raise
         all_imgs = clean_imgs + top_adv_imgs
