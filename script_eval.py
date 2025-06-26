@@ -109,6 +109,7 @@ def main(args):
         top_k_sims = [all_sims[i] for i in sorted_indices[:args.k]]
         print(all_sims)
         print(top_k_sims)
+        raise
         adv_answer = reader.image_to_text(question, topk_imgs)[0]
         
         ## end-to-end performance score
