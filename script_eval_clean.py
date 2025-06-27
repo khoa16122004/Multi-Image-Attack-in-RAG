@@ -26,21 +26,18 @@ def main(args):
             question=question
         )
 
-        try:
-            score_response = llm.text_to_text(
-                system_prompt=system_prompt,
-                prompt=user_prompt
-            ).strip()
+        score_response = llm.text_to_text(
+            system_prompt=system_prompt,
+            prompt=user_prompt
+        ).strip()
+        print(score_response)
+        raise
 
-            # Ghi vào file score.txt trong từng folder
-            score_file_path = os.path.join(args.extracted_path, folder_name, "score.txt")
-            with open(score_file_path, "w") as f:
-                f.write(score_response + "\n")
+        # Ghi vào file score.txt trong từng folder
+        score_file_path = os.path.join(args.extracted_path, folder_name, "score.txt")
+        with open(score_file_path, "w") as f:
+            f.write(score_response + "\n")
 
-        except Exception as e:
-            error_file_path = os.path.join(args.extracted_path, folder_name, "score.txt")
-            with open(error_file_path, "w") as f:
-                f.write(f"Error: {str(e)}\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
