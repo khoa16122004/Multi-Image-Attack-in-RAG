@@ -20,7 +20,7 @@ def main(args):
     reader = Reader(model_name=args.reader_name)
     
     for sample_id in tqdm(range(len(loader))):    
-        question, answer, query, gt_basenames, retri_basenames, retri_imgs = loader.take_retri_data(i)
+        question, answer, query, gt_basenames, retri_basenames, retri_imgs = loader.take_retri_data(sample_id)
         
         lvlm_answers = []
         for i in range(3):
