@@ -156,26 +156,51 @@ def greedy_selection(scores):
     return scores[best_idx], success_retri
 
 def get_prompt_compare_answer(gt_answer, model_answer, question):
-    system_prompt = ( # explain or giving example
-        "You are an expert evaluator. Your task is to evaluate how well an answer matches the ground truth answer for a given question. "
-        "Score the model answer from 0 to 1 based on relevance, accuracy, completeness, and fluency compared to the ground truth. "
-        "Only return the score in this exact format: {\"score\": float}."
-        "Return only the JSON. Do not explain anything else."
+    system_prompt = (
+        "Please evaluate the answer to a question, score from 0 to 1. The reference answer is provided, "
+        "and the reference is usually short phrases or a single keyword. If the student answer is containing "
+        "the keywords or similar expressions (including similar color), without any additional guessed "
+        "information, it is full correct. If the student answer have missed some important part in the reference "
+        "answer, please assign partial score. Usually, when there are 2 key features and only 1 is being "
+        "answered, assign 0.5 score; if there are more than 2 key features, adjust partial score by ratio of "
+        "correctly answered key feature. The reference answer can be in the form of a Python list, in this case, "
+        "any one of the list item is correct. "
+        "If student answer contain irrelevant information not related to question, mark it with “Redundant”, but "
+        "it does not affect score if related part are correct. "
+        "If student answer contain features not listed in reference answer, mark it with “Likely Hallucination” "
+        "and deduct 0.5 score. "
+        "Separate the remarks with score using “|”, that is, use the syntax of: “Score: score | Likely Hallucination”, "
+        "“Score: {score}”, “Score: {score} | Likely Hallucination | Redundant”, etc. If any explanation "
+        "on why giving the score is needed, do not start a new line and append after remark with brackets, e.g. "
+        "“Score: {score} | Redundant | (Explanation: abc)”. "
+        "Following are few examples:\n"
+        "Question: Is there any specific color marking around the eyes of a semipalmated plover (scientific "
+        "name: Charadrius semipalmatus)?\n"
+        "Reference Answer: black eye-round feather, white stripe above eyes, sometimes connected to the "
+        "white forehead\n"
+        "Student Answer: Yes, the bird has a distinctive black line that runs through the eye, which is a key "
+        "identifying feature.\n"
+        "Score: 0 | Likely Hallucination\n"
+        "Student Answer: They have a black vertical band in front of the eye, a white band above the eye, and "
+        "a single black band that wraps partially around the eye, creating a partial “mask” appearance.\n"
+        "Score: 1\n"
+        "Student Answer: Yes, the semipalmated plover has a distinctive black/dark ring around its eye, "
+        "surrounded by a bright white ring or patch\n"
+        "Score: 0.5 | Likely Hallucination (Explanation: not white ring, but only a line above the eye)\n"
+        "Now, Score the following question:"
     )
 
     user_prompt = f"""
 Question:
 {question}
 
-Ground Truth Answer:
+Reference Answer:
 {gt_answer}
 
-Model Answer:
+Student Answer:
 {model_answer}
-
-Give a single score between 0 and 1 in the format:
-{{"score": float}}
 """
+
     return system_prompt, user_prompt
 
 def parse_score(llm_output: str) -> float:
