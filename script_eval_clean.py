@@ -30,13 +30,11 @@ def main(args):
             system_prompt=system_prompt,
             prompt=user_prompt
         ).strip()
-        print(score_response)
-        raise
 
-        # Ghi vào file score.txt trong từng folder
         score_file_path = os.path.join(args.extracted_path, folder_name, "score.txt")
         with open(score_file_path, "w") as f:
             f.write(score_response + "\n")
+        raise
 
 
 if __name__ == "__main__":
