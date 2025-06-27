@@ -82,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_iter", type=int, default=100, help="Maximum iterations")
     parser.add_argument("--std", type=float, default=0.1, help="Standard deviation for initialization")
     parser.add_argument("--start_idx", type=int, default=0)
-    parser.add_argument("--using_question", type=int, default=1)
+    parser.add_argument("--using_question", type=int, default=1) # 1 là sử dụng question để query
     
     args = parser.parse_args()
     main(args)

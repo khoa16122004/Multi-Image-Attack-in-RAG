@@ -156,7 +156,7 @@ def greedy_selection(scores):
     return scores[best_idx], success_retri
 
 def get_prompt_compare_answer(gt_answer, model_answer, question):
-    system_prompt = (
+    system_prompt = ( # explain or giving example
         "You are an expert evaluator. Your task is to evaluate how well an answer matches the ground truth answer for a given question. "
         "Score the model answer from 0 to 1 based on relevance, accuracy, completeness, and fluency compared to the ground truth. "
         "Only return the score in this exact format: {\"score\": float}."
