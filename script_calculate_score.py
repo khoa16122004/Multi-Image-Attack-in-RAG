@@ -24,9 +24,6 @@ def main(args):
         score = parse_score(score_response)
 
         if score is not None:
-            # print(score)
-            if score == 0.5:
-                score = 1
             total_score += score
             count += 1
 
