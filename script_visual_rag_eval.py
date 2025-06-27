@@ -46,5 +46,6 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_dir", type=str, required=True)
+    parser.add_argument("--reader_name", type=str, required=True)
     args = parser.parse_args()
     main(args)
