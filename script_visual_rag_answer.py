@@ -24,7 +24,7 @@ def main(args):
         
         lvlm_answers = []
         for i in range(3):
-            lvlm_answer = reader.image_to_text(question, retri_imgs)[0]
+            lvlm_answer = reader.image_to_text(question, retri_imgs[:i])[0]
             lvlm_answers.append(lvlm_answer)
         
         meta_data = {
