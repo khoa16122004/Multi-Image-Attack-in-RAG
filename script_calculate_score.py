@@ -25,7 +25,7 @@ def main(args):
 
         if score is not None:
             print(score)
-            if score == 0.05:
+            if score == 0.5:
                 score = 1
             total_score += score
             count += 1
