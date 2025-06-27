@@ -32,6 +32,7 @@ def main(args):
         ).strip()
 
         score_file_path = os.path.join(args.extracted_path, folder_name, "score.txt")
+        print(score_file_path)
         with open(score_file_path, "w") as f:
             f.write(score_response + "\n")
         raise
