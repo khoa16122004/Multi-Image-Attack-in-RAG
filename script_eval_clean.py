@@ -7,7 +7,7 @@ from util import get_prompt_compare_answer, parse_score
 
 def main(args):
     llm = GPTService(model_name="gpt-4o")
-
+    avg_scores = 0
     for folder_name in tqdm(os.listdir(args.extracted_path)):
         file_path = os.path.join(args.extracted_path, folder_name, "metadata.json")
         with open(file_path, "r") as f:
@@ -22,12 +22,12 @@ def main(args):
             model_answer=pred_answer,
             question=question
         )
-        print(user_prompt)
 
         score_response = llm.text_to_text(
             system_prompt=system_prompt,
             prompt=user_prompt
         ).strip()
+        print(score_response)
         
         score = parse_score(score_response)
         print(score)
