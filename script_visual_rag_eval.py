@@ -16,7 +16,7 @@ def main(args):
     os.makedirs(output_dir, exist_ok=True)
 
     # model
-    loader = DataLoader(img_dir=args.dataset_dir)
+    loader = DataLoader(retri_dir=args.dataset_dir)
     reader = Reader(model_name=args.reader_name)
     
     for sample_id in tqdm(range(len(loader))):    
