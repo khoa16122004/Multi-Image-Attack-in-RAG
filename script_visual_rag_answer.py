@@ -12,7 +12,7 @@ from llm_service import LlamaService, GPTService
 import pickle 
 def main(args):
     
-    output_dir = f"visual_rag_eval"
+    output_dir = f"visual_rag_eval_usingquestion"
     os.makedirs(output_dir, exist_ok=True)
 
     # model
