@@ -19,15 +19,13 @@ def main(args):
         else:
             file_path = os.path.join(args.extracted_path, folder_name, f"score_{args.n_k}.txt")
 
-        if not os.path.exists(file_path):
-            continue
 
         score_response = open(file_path, "r").read().strip()
         score = parse_score(score_response)
 
         if score is not None:
+            print(score)
             if score == 0.05:
-                print(score)
                 score = 1
             total_score += score
             count += 1
