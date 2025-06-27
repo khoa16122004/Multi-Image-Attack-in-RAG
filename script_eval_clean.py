@@ -22,8 +22,13 @@ def main(args):
             model_answer=pred_answer,
             question=question
         )
+        print(user_prompt)
 
-        score_response = llm.text_to_text(system_prompt=system_prompt, prompt=user_prompt).strip()
+        score_response = llm.text_to_text(
+            system_prompt=system_prompt,
+            prompt=user_prompt
+        ).strip()
+        
         score = parse_score(score_response)
         print(score)
         raise
