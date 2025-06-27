@@ -41,18 +41,18 @@ def main(args):
 
     for sample_id in tqdm(sample_ids):
         
-        # # take data
-        # # # # scores
-        # scores_path = f"attack_result/{retriever_name}_{reader_name}_{std}/{sample_id}/scores_{n_k}.pkl"
-        # with open(scores_path, "rb") as f:
-        #     scores = pickle.load(f)
-        #     scores = arkiv_proccess(scores) # #
+        # take data
+        # # # scores
+        scores_path = f"attack_result/{retriever_name}_{reader_name}_{std}/{sample_id}/scores_{n_k}.pkl"
+        with open(scores_path, "rb") as f:
+            scores = pickle.load(f)
+            scores = arkiv_proccess(scores) # #
             
-        # # # # metadata
-        # metadata_path = f"result_{retriever_name}/{sample_id}/metadata.json"    
-        # with open(metadata_path, "r") as f:
-        #     meta_data = json.load(f)
-        #     question = meta_data["question"] # #
+        # # # metadata
+        metadata_path = f"result_{retriever_name}/{sample_id}/metadata.json"    
+        with open(metadata_path, "r") as f:
+            meta_data = json.load(f)
+            question = meta_data["question"] # #
         
         # # # result answer 
         result_path = f"attack_result/{retriever_name}_{reader_name}_{std}/{sample_id}/answers_{n_k}.json"
@@ -61,14 +61,14 @@ def main(args):
             golden_answer = data["golden_answer"]
             adv_answer = data["adv_answer"] # #
 
-        # # caclulate score L_topi , D_topo
-        # final_front_score = np.array(scores[-1])
-        # selected_scores, success_retri = greedy_selection(final_front_score)
-        # all_scores.append(selected_scores)
-        # if success_retri == True:
-        #     if selected_scores[1] < 1:
-        #         attack_success += 1
-        #     success_retri_score += 1
+        # caclulate score L_topi , D_topo
+        final_front_score = np.array(scores[-1])
+        selected_scores, success_retri = greedy_selection(final_front_score)
+        all_scores.append(selected_scores)
+        if success_retri == True:
+            if selected_scores[1] < 1:
+                attack_success += 1
+            success_retri_score += 1
         
         # ##########################################################  
         # # Assumption score        
