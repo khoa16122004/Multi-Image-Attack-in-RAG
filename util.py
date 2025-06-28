@@ -269,6 +269,7 @@ class Evaluator:
         for i in sorted_indices[:self.n_k]:
             if i < self.n_k:
                 recall_topk += 1
+        recall_topk = recall_topk / self.n_k
                 
         # end-to-end recall
         pred_ans = self.reader.image_to_text(question, sorted_imgs[:self.n_k])[0]
