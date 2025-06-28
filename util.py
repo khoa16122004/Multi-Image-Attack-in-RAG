@@ -233,7 +233,7 @@ class Evaluator:
         all_scores = []
         attack_success = 0
 
-        scores_path = os.path.join(self.attack_result_path, str(sample_id),"scores_{self.n_k}.pkl")
+        scores_path = os.path.join(self.attack_result_path, str(sample_id), f"scores_{self.n_k}.pkl")
         with open(scores_path, "rb") as f:
             scores = pickle.load(f)
             scores = arkiv_proccess(scores)
