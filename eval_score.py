@@ -29,6 +29,7 @@ if __name__ == "__main__":
     parser.add_argument("--run_path", type=str, default="run.txt")
     parser.add_argument("--attack_result_path", type=str)
     parser.add_argument("--result_clean_dir", type=str)
+    parser.add_argument("--sample_path", type=str)
     args = parser.parse_args()
     main(args)
     
