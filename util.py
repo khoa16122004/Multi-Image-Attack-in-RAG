@@ -254,7 +254,7 @@ class Evaluator:
         answer_path = os.path.join(self.attack_result_path, str(sample_id), f"answers_{self.n_k}.json")
         imgs_path = os.path.join(self.attack_result_path, str(sample_id))
         
-        original_answer = json.load(open(answer_path, "r"))["golden_answers"]
+        original_answer = json.load(open(answer_path, "r"))["golden_answer"]
         adv_imgs = []    
         for i in range(self.n_k):
             adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
