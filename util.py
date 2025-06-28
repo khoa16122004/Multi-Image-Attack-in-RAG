@@ -227,7 +227,7 @@ class Evaluator:
         self.attack_result_path = args.attack_result_path
         self.loader = DataLoader(retri_dir=args.result_clean_dir)
         self.llm = GPTService("gpt-4o")
-        self.output_dir = f"{args.attack_result_path}_score"
+        self.output_dir = args.end_to_end_dir
         
     def cal_fitness_score(self, sample_id):        
         attack_success = 0
