@@ -13,7 +13,7 @@ def main(args):
         sample_ids = [int(line.strip()) for line in f]   
     
     evaluator = Evaluator(args)
-    for sample_id in sample_ids:
+    for sample_id in tqdm(sample_ids):
         evaluator.evaluation(sample_id)
         # raise
 
