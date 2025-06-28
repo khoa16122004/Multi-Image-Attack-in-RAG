@@ -222,7 +222,7 @@ class Evaluator:
     def __init__(self, args):
         self.reader = Reader(args.reader_name)
         self.retriever = Retriever(args.retriever_name)
-        self.retriever_name = self.retriever_name
+        self.retriever_name = args.retriever_name
         self.reader_name = args.reader_name
         self.std = args.std
         self.n_k = args.n_k
