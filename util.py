@@ -273,7 +273,7 @@ class Evaluator:
                 
         # end-to-end recall
         end_to_end_score = None
-        pred_ans = self.reader.image_to_text(question, sorted_imgs[:self.n_k])
+        pred_ans = self.reader.image_to_text(question, sorted_imgs[:self.n_k])[0]
         system_prompt, user_prompt = get_prompt_compare_answer(gt_answer=answer, model_answer=pred_ans, question=question)
         print(system_prompt, user_prompt)
         raise
