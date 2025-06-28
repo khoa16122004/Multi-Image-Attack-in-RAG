@@ -9,6 +9,8 @@ from reader import Reader
 from retriever import Retriever
 from tqdm import tqdm
 from llm_service import LlamaService, GPTService
+import re
+
 def dominate(a, b):
     if a[0] < b[0] and a[1] < b[1]:
         return 1
@@ -207,15 +209,11 @@ Student Answer:
 
     return system_prompt, user_prompt
 
-def parse_score(llm_output: str) -> float:
-    try:
-        score_dict = json.loads(llm_output)
-        score = float(score_dict["score"])
-        return score
-    except Exception as e:
-        print("Error parsing score:", e)
-        print("LLM output was:", llm_output)
-        return None
+def parse_score(text):
+    match = re.search(r"Score:\s*([01](?:\.\d+)?)", text)
+    if match:
+        return float(match.group(1))
+    return None
 
 
 class Evaluator:
