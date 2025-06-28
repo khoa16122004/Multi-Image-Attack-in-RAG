@@ -15,7 +15,7 @@ def main(args):
     evaluator = Evaluator(args)
     for sample_id in sample_ids:
         evaluator.evaluation(sample_id)
-        raise
+        # raise
 
 
 if __name__ == "__main__":
