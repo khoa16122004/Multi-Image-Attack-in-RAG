@@ -254,7 +254,7 @@ class Evaluator:
         for i in range(self.n_k):
             adv_img = pickle.load(open(os.path.join(path, f"adv_{i + 1}.pkl"), "rb"))
             adv_imgs.append(adv_img)
-        adv_sims = self.retriever(adv_imgs).cput().tolist()
+        adv_sims = self.retriever(query, adv_imgs).cpu().tolist()
         adv_sims = [item[0] for item in adv_sims]
         all_imgs = retri_imgs + adv_imgs
         all_sims = sims + adv_sims
@@ -273,8 +273,4 @@ class Evaluator:
         print(recall_topk)
         
     
-    
-from bert_score import score
-def get_bertscore(gt_answer, model_answer):
-    P, R, F1 = score([model_answer], [gt_answer], lang="en", verbose=False)
-    return F1.item()
+
