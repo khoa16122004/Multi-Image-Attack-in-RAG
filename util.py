@@ -228,7 +228,9 @@ class Evaluator:
         self.n_k = args.n_k
         self.attack_result_path = args.attack_result_path
         self.loader = DataLoader(retri_dir=args.result_clean_dir)
-
+        self.end_to_end_dir = args.end_to_end_dir
+        self.llm = GPTService("gpt-4o")
+        
     def cal_fitness_score(self, sample_id):
         all_scores = []
         attack_success = 0
@@ -249,10 +251,13 @@ class Evaluator:
 
     def cal_recall_end_to_end(self, sample_id):
         question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
-        path = os.path.join(self.attack_result_path, str(sample_id))
+        answer_path = os.path.join(self.answer_dir, str(sample_id), "answers.json")
+        imgs_path = os.path.join(self.attack_result_path, str(sample_id))
+        
+        original_answer = json.load(open(answer_path, "r"))["golden_answers"]
         adv_imgs = []    
         for i in range(self.n_k):
-            adv_img = pickle.load(open(os.path.join(path, f"adv_{i + 1}.pkl"), "rb"))
+            adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
             adv_imgs.append(adv_img)
         adv_sims = self.retriever(query, adv_imgs).cpu().tolist()
         adv_sims = [item[0] for item in adv_sims]
@@ -260,17 +265,21 @@ class Evaluator:
         all_sims = sims + adv_sims
         sorted_indices = sorted(range(len(all_sims)), key=lambda i: all_sims[i], reverse=True)
         sorted_imgs = [all_imgs[i] for i in sorted_indices]
-        sorted_sims = [all_sims[i] for i in sorted_indices]
-        
-        # check if rate of retri_imgs in self.n_k
-        # [i1, i'1] nk=1.
-        print(all_sims)
-        print(sorted_indices)
+
         recall_topk = 0
         for i in sorted_indices[:self.n_k]:
             if i < self.n_k:
                 recall_topk += 1
-        print(recall_topk)
+                
+        # end-to-end recall
+        end_to_end_score = None
+        pred_ans = self.reader.image_to_text(question, sorted_imgs[:self.n_k])
+        system_prompt, user_prompt = get_prompt_compare_answer(gt_answer=answer, model_answer=pred_ans, question=question)
+        print(system_prompt, user_prompt)
+        raise
+        score_response = self.llm.text_to_text(system_prompt=system_prompt, prompt=user_prompt).strip()
+        end_to_end_score = parse_score(score_response)        
         
+        return recall_topk, end_to_end_score        
     
 

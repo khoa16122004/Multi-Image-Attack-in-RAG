@@ -15,7 +15,6 @@ def main(args):
     evaluator = Evaluator(args)
     for sample_id in sample_ids:
         average_scores, attack_success = evaluator.cal_fitness_score(sample_id)
-        print(average_scores, attack_success)
         recall_topk, recall_end_to_end = evaluator.cal_recall_end_to_end(sample_id)
 
 
@@ -30,6 +29,7 @@ if __name__ == "__main__":
     parser.add_argument("--attack_result_path", type=str)
     parser.add_argument("--result_clean_dir", type=str)
     parser.add_argument("--sample_path", type=str)
+    parser.add_argument("--end_to_end_dir", type=str)
     args = parser.parse_args()
     main(args)
     
