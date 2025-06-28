@@ -19,7 +19,7 @@ def main(args):
                          )
     
     # result_dir
-    result_dir = f"attack_result_usingquestion={args.using_question}"
+    result_dir = f"attack_result"
     os.makedirs(result_dir, exist_ok=True)
     
     # sample_path
