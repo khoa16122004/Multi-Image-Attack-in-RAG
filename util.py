@@ -5,7 +5,10 @@ import os
 from PIL import Image
 import json
 import pickle
-
+from reader import Reader
+from retriever import Retriever
+from tqdm import tqdm
+from llm_service import LlamaService, GPTService
 def dominate(a, b):
     if a[0] < b[0] and a[1] < b[1]:
         return 1
@@ -99,11 +102,12 @@ class DataLoader:
         query = data["keyword"]
         gt_basenames = data["gt_basenames"]
         retri_basenames = data["topk_basenames"]
+        sims = data["topk_sims"]
         
         with open(retri_imgs_path, "rb") as f:
             retri_imgs = pickle.load(f)
         
-        return question, answer, query, gt_basenames, retri_basenames, retri_imgs
+        return question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims
     
     def take_answer_data(self, sample_id):
         sample_dir = os.path.join(self.answer_dir, str(sample_id))
@@ -213,6 +217,65 @@ def parse_score(llm_output: str) -> float:
         print("LLM output was:", llm_output)
         return None
 
+
+class Evaluator:
+    def __init__(self, args):
+        self.reader = Reader(args.reader_name)
+        self.retriever = Retriever(args.retriever_name)
+        self.retriever_name = self.retriever_name
+        self.reader_name = self.reader_name
+        self.std = args.std
+        self.n_k = args.n_k
+        self.attack_result_path = args.attack_result_path
+        self.loader = DataLoader(retri_dir=args.result_clean_dir)
+
+    def cal_fitness_score(self, sample_id):
+        all_scores = []
+        attack_success = 0
+
+        scores_path = f"attack_result/{self.retriever_name}_{self.reader_name}_{self.std}/{sample_id}/scores_{self.n_k}.pkl"
+        with open(scores_path, "rb") as f:
+            scores = pickle.load(f)
+            scores = arkiv_proccess(scores)
+        
+        final_front_score = np.array(scores[-1])
+        selected_scores, success_retri = greedy_selection(final_front_score)
+        all_scores.append(selected_scores)
+        if success_retri == True:
+            if selected_scores[1] < 1:
+                attack_success += 1
+                
+        all_scores = np.array(all_scores)
+        average_scores = np.mean(all_scores, axis=0)
+        return average_scores, attack_success
+
+    def cal_recall_end_to_end(self, sample_id):
+        question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
+        path = os.path.join(self.attack_result_path, sample_id)
+        adv_imgs = []    
+        for i in range(self.n_k):
+            adv_img = pickle.load(open(os.path.join(path, f"adv_{i + 1}.pkl"), "rb"))
+            adv_imgs.append(adv_img)
+        adv_sims = self.retriever(adv_imgs).cput().tolist()
+        adv_sims = [item[0] for item in adv_sims]
+        all_imgs = retri_imgs + adv_imgs
+        all_sims = sims + adv_sims
+        sorted_indices = sorted(range(len(all_sims)), key=lambda i: all_sims[i], reverse=True)
+        sorted_imgs = [all_imgs[i] for i in sorted_indices]
+        sorted_sims = [all_sims[i] for i in sorted_indices]
+        
+        # check if rate of retri_imgs in self.n_k
+        # [i1, i'1] nk=1.
+        print(all_sims)
+        print(sorted_indices)
+        recall_topk = 0
+        for i in sorted_indices[:self.n_k]:
+            if i < self.n_k:
+                recall_topk += 1
+        print(recall_topk)
+        
+    
+    
 from bert_score import score
 def get_bertscore(gt_answer, model_answer):
     P, R, F1 = score([model_answer], [gt_answer], lang="en", verbose=False)
