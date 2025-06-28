@@ -276,8 +276,9 @@ class Evaluator:
         pred_ans = self.reader.image_to_text(question, sorted_imgs[:self.n_k])[0]
         system_prompt, user_prompt = get_prompt_compare_answer(gt_answer=answer, model_answer=pred_ans, question=question)
         score_response = self.llm.text_to_text(system_prompt=system_prompt, prompt=user_prompt).strip()
-        end_to_end_score = parse_score(score_response)        
         print(score_response)
+
+        end_to_end_score = parse_score(score_response)        
         print(end_to_end_score)
         raise
         return recall_topk, end_to_end_score        
