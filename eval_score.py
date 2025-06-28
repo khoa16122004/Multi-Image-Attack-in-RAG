@@ -30,6 +30,7 @@ if __name__ == "__main__":
     parser.add_argument("--result_clean_dir", type=str)
     parser.add_argument("--sample_path", type=str)
     parser.add_argument("--end_to_end_dir", type=str)
+    parser.add_argument("--using_question", type=int, default=1)
     args = parser.parse_args()
     main(args)
     
