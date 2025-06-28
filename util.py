@@ -226,13 +226,11 @@ class Evaluator:
         self.n_k = args.n_k
         self.attack_result_path = args.attack_result_path
         self.loader = DataLoader(retri_dir=args.result_clean_dir)
-        self.end_to_end_dir = args.end_to_end_dir
         self.llm = GPTService("gpt-4o")
+        self.output_dir = f"{args.attack_result_path}_score"
         
-    def cal_fitness_score(self, sample_id):
-        all_scores = []
+    def cal_fitness_score(self, sample_id):        
         attack_success = 0
-
         scores_path = os.path.join(self.attack_result_path, str(sample_id), f"scores_{self.n_k}.pkl")
         with open(scores_path, "rb") as f:
             scores = pickle.load(f)
@@ -247,7 +245,9 @@ class Evaluator:
 
         return selected_scores, attack_success
 
-    def cal_recall_end_to_end(self, sample_id):
+    def cal_recall_end_to_end(self, sample_id):   
+        output_path = os.path.join(self.output_dir, str(sample_id), "answer.json")
+             
         question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
         answer_path = os.path.join(self.attack_result_path, str(sample_id), f"answers_{self.n_k}.json")
         imgs_path = os.path.join(self.attack_result_path, str(sample_id))
@@ -270,15 +270,41 @@ class Evaluator:
                 recall_topk += 1
                 
         # end-to-end recall
-        end_to_end_score = None
         pred_ans = self.reader.image_to_text(question, sorted_imgs[:self.n_k])[0]
         system_prompt, user_prompt = get_prompt_compare_answer(gt_answer=answer, model_answer=pred_ans, question=question)
         score_response = self.llm.text_to_text(system_prompt=system_prompt, prompt=user_prompt).strip()
-        print(score_response)
-
         end_to_end_score = parse_score(score_response)        
-        print(end_to_end_score)
-        raise
-        return recall_topk, end_to_end_score        
+
+        data = {
+            "question": question,
+            "pred_answer": pred_ans,
+            "original_answer": original_answer,
+            "resposne_score": score_response,
+            "parse_score": end_to_end_score
+            
+        }
+
+        with open(output_path, "w") as f:
+            json.dump(data, f, indent=4)
+
+        return recall_topk, end_to_end_score
+    
+    def evaluation(self, sample_id):
+        output_dir = os.path.join(self.output_dir, str(sample_id))
+        os.makedirs(output_dir, exist_ok=True)
+        
+        fitness_scores, attack_success = self.cal_fitness_score(sample_id)
+        recall_topk, recall_end_to_end = self.cal_recall_end_to_end(sample_id)
+        
+        output_path = os.path.join(output_dir, "scores.json")
+        data = {
+            "fitness_scores": fitness_scores,
+            "attack_success": attack_success,
+            "recall_topk": recall_topk,
+            "recall_end_to_end": recall_end_to_end
+        }
+
+        with open(output_path, "w") as f:
+            json.dump(data, f, indent=4)                
     
 
