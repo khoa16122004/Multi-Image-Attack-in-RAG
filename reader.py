@@ -5,7 +5,6 @@ from PIL import Image
 import pickle as pkl
 from torchvision import transforms
 from torchvision.transforms.functional import to_pil_image
-from util import DataLoader
 from vl_models import CLIPModel
 
 class Reader(torch.nn.Module):
@@ -77,18 +76,7 @@ class Reader(torch.nn.Module):
         scores = torch.tensor(all_outputs)
         return scores.cuda()
     
-    
-if __name__ == "__main__":
-    reader = Reader()
-    question, answer, query, gt_basenames, retri_basenames, retri_imgs = DataLoader(retri_dir="retri_result_clip").take_data(0)
-    adv_img_tensor = transforms.ToTensor()(retri_imgs[1]).cuda() + torch.rand(3, 312, 312).cuda() * 100
-    reader.init_data("The larval body of the carpenterworm moth is black and white.")
-    scores = reader(question, [retri_imgs])
-    print(scores)
-    
-    retri_imgs[1] = to_pil_image(adv_img_tensor)
-    scores = reader(question, [retri_imgs])
-    print(scores)
+
     
 
             
