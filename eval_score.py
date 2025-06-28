@@ -14,8 +14,8 @@ def main(args):
     
     evaluator = Evaluator(args)
     for sample_id in sample_ids:
-        average_scores, attack_success = evaluator.cal_fitness_score(sample_id)
-        recall_topk, recall_end_to_end = evaluator.cal_recall_end_to_end(sample_id)
+        evaluator.evaluation(sample_id)
+        raise
 
 
 if __name__ == "__main__":
