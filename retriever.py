@@ -1,6 +1,5 @@
 import torch
 from PIL import Image
-from util import DataLoader
 import os
 import json
 import pickle
@@ -23,25 +22,3 @@ class Retriever(torch.nn.Module):
         
         return sim
     
-if __name__ == "__main__":
-    # sample_id
-    sample_id = 1
-    n_k = 3
-    # path
-    retri_dir = "retri_result_clip"
-    reader_dir = "reader_result/Llama-7b/clip"
-    result_dir = f"attack_result"
-    retriever_name = "clip"
-    reader_name = "llava"
-    std = 0.1
-
-    
-    # model
-    retriever = Retriever(retriever_name=retriever_name)
-    
-    # data
-    loader = DataLoader(retri_dir=retri_dir)
-    question, answer, query, gt_basenames, retri_basenames, retri_imgs = loader.take_data(sample_id)
-    
-    # init fitness data
-    print(retriever(query, retri_imgs))
