@@ -296,7 +296,8 @@ class Evaluator:
         
         fitness_scores, attack_success = self.cal_fitness_score(sample_id)
         recall_topk, recall_end_to_end = self.cal_recall_end_to_end(sample_id)
-        
+        print(fitness_scores)
+        raise
         output_path = os.path.join(output_dir, f"scores_{self.n_k}.json")
         data = {
             "fitness_scores": fitness_scores,
