@@ -102,7 +102,7 @@ class DataLoader:
         query = data["keyword"]
         gt_basenames = data["gt_basenames"]
         retri_basenames = data["topk_basenames"]
-        sims = data["topk_sims"]
+        sims = data["sims"]
         
         with open(retri_imgs_path, "rb") as f:
             retri_imgs = pickle.load(f)
@@ -240,14 +240,12 @@ class Evaluator:
         
         final_front_score = np.array(scores[-1])
         selected_scores, success_retri = greedy_selection(final_front_score)
-        all_scores.append(selected_scores)
         if success_retri == True:
             if selected_scores[1] < 1:
-                attack_success += 1
+                attack_success = 1
                 
-        all_scores = np.array(all_scores)
-        average_scores = np.mean(all_scores, axis=0)
-        return average_scores, attack_success
+
+        return selected_scores, attack_success
 
     def cal_recall_end_to_end(self, sample_id):
         question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
