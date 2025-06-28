@@ -18,7 +18,7 @@ def main(args):
     sample_list = os.listdir(args.extracted_path)
     for sample_id in tqdm(sample_list):
         sample_path = os.path.join(args.extracted_path, sample_id) 
-        score_path = os.path.join(sample_path, f"score_{args.n_k}.json")  # fixed formatting
+        score_path = os.path.join(sample_path, f"scores_{args.n_k}.json")  # fixed formatting
 
         with open(score_path, "r") as f:
             scores = json.load(f)
