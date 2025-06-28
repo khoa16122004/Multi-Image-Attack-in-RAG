@@ -251,7 +251,7 @@ class Evaluator:
 
     def cal_recall_end_to_end(self, sample_id):
         question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
-        answer_path = os.path.join(self.attack_result_path, str(sample_id), "answers.json")
+        answer_path = os.path.join(self.attack_result_path, str(sample_id), f"answers_{self.n_k}.json")
         imgs_path = os.path.join(self.attack_result_path, str(sample_id))
         
         original_answer = json.load(open(answer_path, "r"))["golden_answers"]
