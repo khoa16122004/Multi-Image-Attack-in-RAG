@@ -228,6 +228,7 @@ class Evaluator:
         self.loader = DataLoader(retri_dir=args.result_clean_dir)
         self.llm = GPTService("gpt-4o")
         self.output_dir = f"scores_usingquestion={args.using_question}_{args.retriever_name}_{args.reader_name}_{args.std}"
+        os.makedirs(self.output_dir, exist_ok=True)
         
     def cal_fitness_score(self, sample_id):        
         attack_success = 0
@@ -246,7 +247,7 @@ class Evaluator:
         return selected_scores, attack_success
 
     def cal_recall_end_to_end(self, sample_id):   
-        output_path = os.path.join(self.output_dir, str(sample_id), "answer_{self.n_k}.json")
+        output_path = os.path.join(self.output_dir, str(sample_id), f"answer_{self.n_k}.json")
              
         question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
         answer_path = os.path.join(self.attack_result_path, str(sample_id), f"answers_{self.n_k}.json")
@@ -296,7 +297,7 @@ class Evaluator:
         fitness_scores, attack_success = self.cal_fitness_score(sample_id)
         recall_topk, recall_end_to_end = self.cal_recall_end_to_end(sample_id)
         
-        output_path = os.path.join(output_dir, "scores_{self.n_k}.json")
+        output_path = os.path.join(output_dir, f"scores_{self.n_k}.json")
         data = {
             "fitness_scores": fitness_scores,
             "attack_success": attack_success,
