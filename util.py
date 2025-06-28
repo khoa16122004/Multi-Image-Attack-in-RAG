@@ -223,7 +223,7 @@ class Evaluator:
         self.reader = Reader(args.reader_name)
         self.retriever = Retriever(args.retriever_name)
         self.retriever_name = self.retriever_name
-        self.reader_name = self.reader_name
+        self.reader_name = args..reader_name
         self.std = args.std
         self.n_k = args.n_k
         self.attack_result_path = args.attack_result_path
