@@ -36,7 +36,7 @@ def main(args):
     fitness_score = np.mean(np.array(fitness_score), axis=0)
 
     num_samples = len(sample_list)
-    print(f"Fitness Score (mean): {fitness_score:.4f}")
+    print(f"Fitness Score (mean): {fitness_score.tolist():.4f}")
     print(f"Attack Success Rate: {attack_success_total / num_samples:.4f}")
     print(f"Recall@Top-{args.n_k}: {recall_topk_total / num_samples:.4f}")
     print(f"End-to-End@Top-{args.n_k}: {end_to_end_score_total / num_samples:.4f}")
