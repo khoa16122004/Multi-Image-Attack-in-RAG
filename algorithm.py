@@ -255,6 +255,7 @@ class RandomAttack:
         self.best_retri_score = P_retri_score
         self.best_reader_score = P_reader_score
         self.adv_img = P_adv_imgs[0]
+        self.best_individual = P
         self.save_logs()
             
     def save_logs(self):
@@ -283,7 +284,7 @@ class RandomAttack:
             pickle.dump(self.adv_img, f)
 
         with open(score_log_file, 'wb') as f:
-            pickle.dump(self.np.array([self.best_retri_score, self.best_reader_score]), f)
+            pickle.dump(np.array([self.best_retri_score, self.best_reader_score]), f)
         with open(invidual_log_file, 'wb') as f:
             pickle.dump(self.best_individual, f)
 
