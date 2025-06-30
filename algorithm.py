@@ -283,7 +283,7 @@ class RandomAttack:
             pickle.dump(self.adv_img, f)
 
         with open(score_log_file, 'wb') as f:
-            pickle.dump(self.history, f)
+            pickle.dump(self.np.array([self.best_retri_score, self.best_reader_score]), f)
         with open(invidual_log_file, 'wb') as f:
             pickle.dump(self.best_individual, f)
 
