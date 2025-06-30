@@ -251,19 +251,19 @@ class RandomAttack:
 
     def solve(self):
         P = torch.rand(1, 3, self.w, self.h).cuda() * self.std
-        self.P_retri_score, self.P_reader_score, self.P_adv_imgs = self.fitness(P)
-        print(self.P_retri_score, self.P_reader_score, self.P_adv_imgs)
-        raise
+        P_retri_score, P_reader_score, P_adv_imgs = self.fitness(P)
+        self.best_retri_scores = P_retri_score
+        self.best_reader_scores = P_reader_score
+        self.adv_img = P_adv_imgs[0]
             
     def save_logs(self):
         score_log_file = os.path.join(self.log_dir, f"scores_{self.n_k}.pkl") 
         invidual_log_file = os.path.join(self.log_dir, f"individuals_{self.n_k}.pkl")
-        img_pkl_file = os.path.join(self.log_dir, f"images_{self.n_k}.pkl")
         adv_img_file = os.path.join(self.log_dir, f"adv_{self.n_k}.pkl")
-        adv_history_file = os.path.join(self.log_dir, f"adv_history_{self.n_k}.pkl")
         answer_file = os.path.join(self.log_dir, f"answers_{self.n_k}.json")
         
         # inference
+        final_selection_adv_img, retri_success = self.final_selection()
         adv_answer = self.fitness.reader.image_to_text(
             qs=self.fitness.question,
             img_files=self.fitness.top_adv_imgs + [self.adv_img]
@@ -285,12 +285,9 @@ class RandomAttack:
         with open(invidual_log_file, 'wb') as f:
             pickle.dump(self.best_individual, f)
 
-        # Save list of images directly
-        with open(img_pkl_file, 'wb') as f:
-            pickle.dump(self.rank_0_adv_imgs, f)
+
             
-        with open(adv_history_file, 'wb') as f:
-            pickle.dump(self.img_history, f)
+
     
     def final_selection(self):
         
@@ -303,24 +300,3 @@ class RandomAttack:
             best_idx = np.argmin(self.best_retri_score)
         return self.rank_0_adv_imgs[best_idx], success_full
 
-        
-    
-    def NSGA_selection(self, pool_fitness):
-        
-        fronts = self.nds.do(pool_fitness, n_stop_if_ranked=self.population_size) # front ranked
-        survivors = []
-        for k, front in enumerate(fronts):
-            crowding_of_front = self.calculating_crowding_distance(pool_fitness[front])
-            sorted_indices = np.argsort(-crowding_of_front)
-            front_sorted = [front[i] for i in sorted_indices]
-            for idx in front_sorted:
-                if len(survivors) < self.population_size:
-                    survivors.append(idx)
-                else:
-                    break
-            if len(survivors) >= self.population_size:
-                break
-        return survivors, fronts
-    
-     
-    

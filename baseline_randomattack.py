@@ -5,7 +5,7 @@ from PIL import Image
 import argparse
 from util import DataLoader
 from fitness import MultiScore
-from algorithm import NSGAII, RandomAttack
+from algorithm import RandomAttack
 from tqdm import tqdm
 import json
 import pickle
@@ -19,7 +19,7 @@ def main(args):
                          )
     
     # result_dir
-    result_dir = f"random_attack_usingquestion={args.using_question}"
+    result_dir = f"baseline_randomattack_usingquestion={args.using_question}"
     os.makedirs(result_dir, exist_ok=True)
     
     # sample_path
@@ -57,7 +57,7 @@ def main(args):
         )
 
         algorithm.solve()
-        # break
+        break
         
 
 
@@ -71,9 +71,8 @@ if __name__ == "__main__":
     parser.add_argument("--retriever_name", type=str, default="clip")
     parser.add_argument("--w", type=int, default=312, help="Width to resize images")
     parser.add_argument("--h", type=int, default=312, help="Height to resize images")
-    parser.add_argument("--n_k", type=int, default=1, help="Number of attack")
+    parser.add_argument("--pop_size", type=int, default=20, help="Population size for NSGA-II")
     parser.add_argument("--std", type=float, default=0.1, help="Standard deviation for initialization")
-    parser.add_argument("--start_idx", type=int, default=0)
     parser.add_argument("--using_question", type=int, default=1) # 1 là sử dụng question để query
     
     args = parser.parse_args()  
