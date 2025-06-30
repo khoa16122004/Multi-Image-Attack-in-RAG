@@ -250,12 +250,10 @@ class RandomAttack:
 
 
     def solve(self):
-        P = torch.rand(2, 3, self.w, self.h).cuda() * self.std
+        P = torch.rand(1, 3, self.w, self.h).cuda() * self.std
         P_retri_score, P_reader_score, P_adv_imgs = self.fitness(P)
         self.best_retri_score = P_retri_score
         self.best_reader_score = P_reader_score
-        print(self.best_reader_score.shape)
-        print(self.best_retri_score.shape)
         self.adv_img = P_adv_imgs[0]
         self.best_individual = P
         self.save_logs()
@@ -286,7 +284,7 @@ class RandomAttack:
             pickle.dump(self.adv_img, f)
 
         with open(score_log_file, 'wb') as f:
-            pickle.dump(np.array([self.best_retri_score, self.best_reader_score]), f)
+            pickle.dump(np.column_stack([self.best_retri_score, self.best_reader_score]), f)
         with open(invidual_log_file, 'wb') as f:
             pickle.dump(self.best_individual, f)
 
