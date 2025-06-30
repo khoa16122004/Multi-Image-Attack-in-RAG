@@ -254,6 +254,8 @@ class RandomAttack:
         P_retri_score, P_reader_score, P_adv_imgs = self.fitness(P)
         self.best_retri_score = P_retri_score
         self.best_reader_score = P_reader_score
+        print(self.best_reader_score.shape)
+        print(self.best_retri_score.shape)
         self.adv_img = P_adv_imgs[0]
         self.best_individual = P
         self.save_logs()
