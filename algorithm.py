@@ -255,6 +255,7 @@ class RandomAttack:
         self.best_retri_scores = P_retri_score
         self.best_reader_scores = P_reader_score
         self.adv_img = P_adv_imgs[0]
+        self.save_logs()
             
     def save_logs(self):
         score_log_file = os.path.join(self.log_dir, f"scores_{self.n_k}.pkl") 
