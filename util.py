@@ -303,8 +303,6 @@ class Evaluator:
         output_dir = os.path.join(self.output_dir, str(sample_id))
         os.makedirs(output_dir, exist_ok=True)
         
-        if self.method == "random":
-            fitness_scores = 
         fitness_scores, attack_success = self.cal_fitness_score(sample_id)
         recall_topk, recall_end_to_end = self.cal_recall_end_to_end(sample_id)
 
