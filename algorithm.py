@@ -252,8 +252,8 @@ class RandomAttack:
     def solve(self):
         P = torch.rand(1, 3, self.w, self.h).cuda() * self.std
         P_retri_score, P_reader_score, P_adv_imgs = self.fitness(P)
-        self.best_retri_scores = P_retri_score
-        self.best_reader_scores = P_reader_score
+        self.best_retri_score = P_retri_score
+        self.best_reader_score = P_reader_score
         self.adv_img = P_adv_imgs[0]
         self.save_logs()
             
