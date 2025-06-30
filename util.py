@@ -246,6 +246,7 @@ class Evaluator:
         elif self.method == "random":
             selected_scores = scores      
             success_retri = selected_scores[0] < 1    
+            print(success_retri)
               
         if success_retri == True:
             if selected_scores[1] < 1:
