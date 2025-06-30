@@ -244,7 +244,8 @@ class Evaluator:
             selected_scores, success_retri = greedy_selection(final_front_score)
             
         elif self.method == "random":
-            selected_scores = scores      
+            selected_scores = scores[0]  
+            print(selected_scores)
             success_retri = selected_scores[0] < 1    
             print(success_retri)
               
