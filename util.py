@@ -228,6 +228,7 @@ class Evaluator:
         self.attack_result_path = args.attack_result_path
         self.loader = DataLoader(retri_dir=args.result_clean_dir)
         self.llm = GPTService("gpt-4o")
+        self.method = args.method
         self.output_dir = f"scores_usingquestion={args.using_question}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
         os.makedirs(self.output_dir, exist_ok=True)
         
@@ -236,10 +237,16 @@ class Evaluator:
         scores_path = os.path.join(self.attack_result_path, str(sample_id), f"scores_{self.n_k}.pkl")
         with open(scores_path, "rb") as f:
             scores = pickle.load(f)
+            
+        if self.method == "nsga2":
             scores = arkiv_proccess(scores)
-        
-        final_front_score = np.array(scores[-1])
-        selected_scores, success_retri = greedy_selection(final_front_score)
+            final_front_score = np.array(scores[-1])
+            selected_scores, success_retri = greedy_selection(final_front_score)
+            
+        elif self.method == "random":
+            selected_scores = scores      
+            success_retri = selected_scores[0] < 1    
+              
         if success_retri == True:
             if selected_scores[1] < 1:
                 attack_success = 1
@@ -296,6 +303,8 @@ class Evaluator:
         output_dir = os.path.join(self.output_dir, str(sample_id))
         os.makedirs(output_dir, exist_ok=True)
         
+        if self.method == "random":
+            fitness_scores = 
         fitness_scores, attack_success = self.cal_fitness_score(sample_id)
         recall_topk, recall_end_to_end = self.cal_recall_end_to_end(sample_id)
 
