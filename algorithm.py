@@ -264,7 +264,8 @@ class RandomAttack:
         answer_file = os.path.join(self.log_dir, f"answers_{self.n_k}.json")
         
         # inference
-        final_selection_adv_img, retri_success = self.final_selection()
+        retri_success = self.is_retrieved()
+            
         adv_answer = self.fitness.reader.image_to_text(
             qs=self.fitness.question,
             img_files=self.fitness.top_adv_imgs + [self.adv_img]
@@ -279,7 +280,7 @@ class RandomAttack:
             json.dump(answers, f, indent=4)
         
         with open(adv_img_file, 'wb') as f:
-            pickle.dump(final_selection_adv_img, f)
+            pickle.dump(self.adv_img, f)
 
         with open(score_log_file, 'wb') as f:
             pickle.dump(self.history, f)
@@ -290,14 +291,8 @@ class RandomAttack:
             
 
     
-    def final_selection(self):
-        
-        valid_indices = np.where(self.best_retri_score < 1)[0]
-        if len(valid_indices) > 0:
-            best_idx = valid_indices[np.argmin(self.best_reader_score[valid_indices])]
-            success_full = True
-        else:
-            success_full = False
-            best_idx = np.argmin(self.best_retri_score)
-        return self.rank_0_adv_imgs[best_idx], success_full
+    def is_retrieved(self):
+        if self.best_retri_score < 1 and self.best_reader_score < 1:
+            return True
+        return False
 
