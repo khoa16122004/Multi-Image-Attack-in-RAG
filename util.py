@@ -229,7 +229,7 @@ class Evaluator:
         self.loader = DataLoader(retri_dir=args.result_clean_dir)
         self.init_llm()
         self.method = args.method
-        self.output_dir = f"scores_usingquestion={args.using_question}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
+        self.output_dir = f"scores_usingquestion={args.using_question}_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
         os.makedirs(self.output_dir, exist_ok=True)
     
 
