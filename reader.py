@@ -78,7 +78,7 @@ class Reader(torch.nn.Module):
 
 
 if __name__ == "main":
-    reader("deepseek-vl")
+    Reader("deepseek-vl")
     
 
     
