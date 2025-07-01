@@ -28,7 +28,6 @@ class Mantis:
             self.model,
             self.processor,
             do_sample=do_sample,
-            temperature=temperature,
             max_new_tokens=100,
             num_return_sequences=num_return_sequences
         )
