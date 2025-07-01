@@ -51,5 +51,10 @@ class DeepSeekVL2:
         return outputs
 
 if __name__ == "main":
-    lvlm = DeepSeekVL2("deepseek-vl2")
+    question = "What is the shape of nostrils on bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris)?"
+    img_files = [Image.open(f"test_{i + 1}.jpg") for i in range(3)]
+
     
+    lvlm = DeepSeekVL2("deepseek-vl2")
+    answer = lvlm(qs, img_files)
+    print(answer)
