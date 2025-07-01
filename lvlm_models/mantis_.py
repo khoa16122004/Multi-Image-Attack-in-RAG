@@ -13,11 +13,7 @@ class Mantis:
             attn_implementation="flash_attention_2"
         )
         self.model.eval()
-        self.generation_kwargs = {
-            "max_new_tokens": 1024,
-            "num_beams": 1,
-            "do_sample": False
-        }
+
 
     def __call__(self, qs, img_files, num_return_sequences=1, do_sample=False, temperature=0):
         if not do_sample and num_return_sequences > 1:
@@ -27,7 +23,7 @@ class Mantis:
             qs, img_files,
             self.model,
             self.processor,
-            do_sample=do_sample,
+            max_new_tokens=100,
             num_return_sequences=num_return_sequences,
             eos_token_id=self.processor.tokenizer.eos_token_id,  # <-- thêm dòng này
         )
