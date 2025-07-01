@@ -9,7 +9,7 @@ class DeepSeekVL2:
     def __init__(self, pretrained):
         model_path = f"deepseek-ai/{pretrained}"
         self.vl_chat_proccessor = DeepseekVLV2Processor.from_pretrained(model_path)
-        self.tokenizer = vl_chat_proccessor.tokenizer
+        self.tokenizer = self.vl_chat_proccessor.tokenizer
 
         self.vl_gpt = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
         self.vl_gpt = vl_gpt.to(torch.bfloat16).cuda().eval()
