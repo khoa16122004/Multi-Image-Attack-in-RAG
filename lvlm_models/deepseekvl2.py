@@ -50,7 +50,7 @@ class DeepSeekVL2:
         outputs = text_outputs
         return outputs
 
-if __name__ == "main":
+if __name__ == "__main__":
     question = "What is the shape of nostrils on bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris)? <image_placeholder><image_placeholder><image_placeholder>"
     img_files = [Image.open(f"test_{i + 1}.jpg") for i in range(3)]
 
