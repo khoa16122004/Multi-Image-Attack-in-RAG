@@ -17,7 +17,7 @@ class DeepSeekVL2:
         conversation = [
             {
                 "role": "User",
-                "content": qs
+                "content": qs,
                 "images": img_files
             },
             {"role": "Assistant", "content": ""}
