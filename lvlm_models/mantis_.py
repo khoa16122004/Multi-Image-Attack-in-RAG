@@ -27,10 +27,7 @@ class Mantis:
             qs, img_files,
             self.model,
             self.processor,
-            do_sample=do_sample,
-            temperature=temperature,
             max_new_tokens=4096,
-            num_return_sequences=num_return_sequences
         )
         return [response]
 
