@@ -29,7 +29,9 @@ class Mantis:
             self.processor,
             do_sample=do_sample,
             max_new_tokens=100,
-            num_return_sequences=num_return_sequences
+            num_return_sequences=num_return_sequences,
+            eos_token_id=self.processor.tokenizer.eos_token_id,  # <-- thêm dòng này
+
         )
         return [response]
 
