@@ -19,6 +19,17 @@ class Mantis:
             "do_sample": False
         }
 
+        # Gán thủ công chat_template để chat_mllava không bị lỗi
+        self.processor.tokenizer.chat_template = (
+            "{% for message in messages %}"
+            "{% if message['role'] == 'user' %}"
+            "{{ bos_token }}User: {{ message['content'][0]['text'] }}\n"
+            "{% elif message['role'] == 'assistant' %}"
+            "Assistant: {{ message['content'][0]['text'] }}\n"
+            "{% endif %}"
+            "{% endfor %}"
+        )
+
     def __call__(self, qs, img_files, num_return_sequences=1, do_sample=False, temperature=0):
         if not do_sample and num_return_sequences > 1:
             raise ValueError("Greedy decoding doesn't support multiple return sequences. Set do_sample=True or num_beams > 1.")
@@ -35,18 +46,10 @@ class Mantis:
         return [response]
 
     def compute_log_prob(self, question, imgs, answer):
-        # Build the full prompt as in chat_mllava
-        messages = [
-            {"role": "user", "content": [{"type": "text", "text": question}]},
-            {"role": "assistant", "content": [{"type": "text", "text": answer}]}
-        ]
-
-        # Tokenize with images
-        input_data = self.processor.tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=False
-        )
+        # Tự tạo prompt thủ công thay vì dùng apply_chat_template
+        full_prompt = f"User: {question}\nAssistant: {answer}"
         encoding = self.processor(
-            text=input_data,
+            text=full_prompt,
             images=imgs,
             return_tensors="pt",
             padding="longest"
@@ -56,10 +59,10 @@ class Mantis:
         attention_mask = encoding["attention_mask"]
         pixel_values = encoding["pixel_values"]
 
-        # Create labels: ignore prompt tokens, only compute loss on answer
+        # Tạo label chỉ cho phần trả lời
         labels = input_ids.clone()
         answer_ids = self.processor.tokenizer(answer, add_special_tokens=False, return_tensors="pt")["input_ids"][0].to(self.model.device)
-        labels[:, :-answer_ids.shape[0]] = -100  # ignore question part
+        labels[:, :-answer_ids.shape[0]] = -100  # chỉ tính loss trên phần answer
 
         with torch.no_grad():
             outputs = self.model(
