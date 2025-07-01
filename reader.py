@@ -77,7 +77,7 @@ class Reader(torch.nn.Module):
         return scores.cuda()
 
 
-if __name__ == "main":
+if "__name__" == "main":
     Reader("deepseek-vl")
     
 
