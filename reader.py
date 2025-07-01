@@ -36,7 +36,7 @@ class Reader(torch.nn.Module):
             self.model = DeepSeekVL2(
                 pretrained="deepseek-vl2"
             )
-            self.image_token = "image_placeholder"
+            self.image_token = "<image_placeholder>"
 
 
             
