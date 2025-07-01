@@ -1,6 +1,6 @@
 from transformers import AutoModelForCausalLM
-from deepseek_vl.models import DeepseekVLV2Processor, DeepseekVLV2ForCausalLM
-from deepseek_vl.utils.io import load_pil_images
+from deepseek_vl2.models import DeepseekVLV2Processor, DeepseekVLV2ForCausalLM
+from deepseek_vl2.utils.io import load_pil_images
 import torch
 import math
 
@@ -51,7 +51,7 @@ class DeepSeekVL2:
         return outputs
 
 if __name__ == "main":
-    question = "What is the shape of nostrils on bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris)?"
+    question = "What is the shape of nostrils on bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris)? <image_placeholder><image_placeholder><image_placeholder>"
     img_files = [Image.open(f"test_{i + 1}.jpg") for i in range(3)]
 
     
