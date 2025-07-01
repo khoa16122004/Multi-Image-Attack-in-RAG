@@ -3,6 +3,7 @@ from deepseek_vl2.models import DeepseekVLV2Processor, DeepseekVLV2ForCausalLM
 from deepseek_vl2.utils.io import load_pil_images
 import torch
 import math
+from PIL import Image
 
 class DeepSeekVL2:
     def __init__(self, pretrained):
