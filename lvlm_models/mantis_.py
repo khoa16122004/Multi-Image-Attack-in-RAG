@@ -19,7 +19,7 @@ class Mantis:
             "do_sample": False
         }
 
-    def inference(self, qs, img_files, num_return_sequences=1, do_sample=True, temperature=0):
+    def __call__(self, qs, img_files, num_return_sequences=1, do_sample=True, temperature=0):
         if not do_sample and num_return_sequences > 1:
             raise ValueError("Greedy decoding doesn't support multiple return sequences. Set do_sample=True or num_beams > 1.")
 
