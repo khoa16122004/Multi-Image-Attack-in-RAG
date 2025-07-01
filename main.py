@@ -38,10 +38,6 @@ def main(args):
                 top_adv_imgs.append(pickle.load(f))
         top_original_imgs = retri_imgs[:args.n_k]
         golden_answer = fitness.reader.image_to_text(question, top_original_imgs)[0]     
-        print("question: ", question)
-        print("Golden answer: ", golden_answer)
-        input()
-        continue
         # raise
         fitness.init_data(query, 
                           question, 

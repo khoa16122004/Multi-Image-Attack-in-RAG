@@ -14,7 +14,7 @@ class Reader(torch.nn.Module):
         
         if model_name == "llava-next":
             from lvlm_models.llava_ import LLava
-            self.instruction = "Answer the given question based only on the visual content of the images. Do not guess or use outside knowledge. Keep the answer short."
+            self.instruction = "Answer the given question based only on the visual content of the images. Do not guess or use outside knowledge."
             self.model = LLava(
                 pretrained="llava-next-interleave-qwen-7b",
                 model_name="llava_qwen",
@@ -30,22 +30,14 @@ class Reader(torch.nn.Module):
             )
             self.image_token = "<image>"
 
-        elif model_name == "deepseek-vl":
-            from lvlm_models.deepseek_ import DeepSeek
+        elif model_name == "deepseek-vl2":
+            from lvlm_models.deepseekvl2 import DeepSeekVL2
             self.instruction = "Answer the given question based only on the visual content of the images. Do not guess or use outside knowledge."
-            self.model = DeepSeek(
-                pretrained="DeepSeek-VL-7B-chat",
+            self.model = DeepSeekVL2(
+                pretrained="deepseek-vl2"
             )
-            self.image_token = "<image_placeholder>"
+            self.image_token = "image_placeholder"
 
-            
-        elif model_name == "mantis":
-            from lvlm_models.mantis_ import Mantis
-            self.instruction = "Answer the given question based only on the visual content of the images. Do not guess or use outside knowledge."
-            self.model = Mantis(
-                pretrained="Mantis-llava-7b",
-            )
-            self.image_token = "<image>"
 
             
     def init_data(self, golden_answer):
