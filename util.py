@@ -8,7 +8,7 @@ import pickle
 from reader import Reader
 from retriever import Retriever
 from tqdm import tqdm
-from llm_service import LlamaService, GPTService
+from llm_service import LlamaService
 import re
 
 def dominate(a, b):
