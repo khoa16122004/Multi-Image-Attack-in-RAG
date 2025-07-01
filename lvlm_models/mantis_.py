@@ -23,6 +23,7 @@ class Mantis:
             qs, img_files,
             self.model,
             self.processor,
+            max_new_tokens=100
             do_sample=False,
         )
         return [response]
