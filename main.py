@@ -40,7 +40,9 @@ def main(args):
         golden_answer = fitness.reader.image_to_text(question, top_original_imgs)[0]     
         print("question: ", question)
         print("Golden answer: ", golden_answer)
-        raise
+        input()
+        continue
+        # raise
         fitness.init_data(query, 
                           question, 
                           top_adv_imgs, # top_adv_imgs: I'_0 , I'_1, ..., I'_{nk-2}
