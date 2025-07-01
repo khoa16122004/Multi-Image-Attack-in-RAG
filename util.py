@@ -229,6 +229,7 @@ class Evaluator:
         self.loader = DataLoader(retri_dir=args.result_clean_dir)
         self.init_llm(args.llm)
         self.method = args.method
+        self.target_answer = args.target_answer
         self.output_dir = f"scores_usingquestion={args.using_question}_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
         os.makedirs(self.output_dir, exist_ok=True)
     
@@ -268,7 +269,11 @@ class Evaluator:
         answer_path = os.path.join(self.attack_result_path, str(sample_id), f"answers_{self.n_k}.json")
         imgs_path = os.path.join(self.attack_result_path, str(sample_id))
         
-        original_answer = json.load(open(answer_path, "r"))["golden_answer"]
+        if self.target_answer == "gt_answer":
+            gt_answer = answer
+        elif self.target_answer == "golden_answer":
+            target_answer = json.load(open(answer_path, "r"))["golden_answer"]
+        
         adv_imgs = []    
         for i in range(self.n_k):
             adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
@@ -288,7 +293,7 @@ class Evaluator:
                 
         # end-to-end recall
         pred_ans = self.reader.image_to_text(question, sorted_imgs[:self.n_k])[0]
-        system_prompt, user_prompt = get_prompt_compare_answer(gt_answer=original_answer, model_answer=pred_ans, question=question)
+        system_prompt, user_prompt = get_prompt_compare_answer(gt_answer=target_answer, model_answer=pred_ans, question=question)
         score_response = self.llm.text_to_text(system_prompt=system_prompt, prompt=user_prompt).strip()
         end_to_end_score = parse_score(score_response)        
 
