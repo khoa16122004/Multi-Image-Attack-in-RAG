@@ -32,6 +32,7 @@ if __name__ == "__main__":
     parser.add_argument("--end_to_end_dir", type=str)
     parser.add_argument("--using_question", type=int, default=1)
     parser.add_argument("--method", type=str, default="random", choices=["random", "nsga2", "ga"])
+    parser.add_argument("--llm", type=str, choice=['gpt', 'llama', 'gemma'])
     # if non method in the path, it's nsgaii
     args = parser.parse_args()
     main(args)

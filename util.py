@@ -227,11 +227,18 @@ class Evaluator:
         self.n_k = args.n_k
         self.attack_result_path = args.attack_result_path
         self.loader = DataLoader(retri_dir=args.result_clean_dir)
-        self.llm = GPTService("gpt-4o")
+        self.init_llm()
         self.method = args.method
         self.output_dir = f"scores_usingquestion={args.using_question}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
         os.makedirs(self.output_dir, exist_ok=True)
-        
+    
+
+    def init_llm(self, model_name):
+        if model_name == "llama":
+            self.llm = LlamaService("Llama-13b")
+        elif model_name == "gpt":
+            self.llm = GPTService("gpt-4o")
+
     def cal_fitness_score(self, sample_id):        
         attack_success = 0
         scores_path = os.path.join(self.attack_result_path, str(sample_id), f"scores_{self.n_k}.pkl")
