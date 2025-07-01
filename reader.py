@@ -75,6 +75,10 @@ class Reader(torch.nn.Module):
 
         scores = torch.tensor(all_outputs)
         return scores.cuda()
+
+
+if __name__ == "main":
+    reader("deepseek-vl")
     
 
     
