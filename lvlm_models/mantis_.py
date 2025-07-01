@@ -23,13 +23,7 @@ class Mantis:
             qs, img_files,
             self.model,
             self.processor,
-            max_new_tokens=100,
-            num_beams=1,
-            truncation=True,
             do_sample=False,
-            eos_token_id=self.processor.tokenizer.eos_token_id, 
-            pad_token_id=self.processor.tokenizer.pad_token_id,
-
         )
         return [response]
 
