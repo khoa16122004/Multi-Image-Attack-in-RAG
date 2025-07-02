@@ -35,7 +35,7 @@ class DeepSeekVL2:
 
         with torch.inference_mode():
 
-            cont = self.vl_gpt.language_model.generate(
+            cont = self.vl_gpt.language.generate(
                 inputs_embeds=inputs_embeds,
                 attention_mask=prepare_inputs.attention_mask,
                 pad_token_id=self.tokenizer.eos_token_id,
