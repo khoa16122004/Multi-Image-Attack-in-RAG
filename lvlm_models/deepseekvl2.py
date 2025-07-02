@@ -33,7 +33,7 @@ class DeepSeekVL2:
 
         inputs_embeds = self.vl_gpt.prepare_inputs_embeds(**prepare_inputs)
 
-        with torch.inference_mdoe():
+        with torch.inference_mode():
 
             cont = self.vl_gpt.language_model.generate(
                 inputs_embeds=inputs_embeds,
