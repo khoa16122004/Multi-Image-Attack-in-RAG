@@ -12,7 +12,7 @@ class DeepSeekVL2:
         self.tokenizer = self.vl_chat_proccessor.tokenizer
 
         vl_gpt = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
-        self.vl_gpt = vl_gpt.to(torch.float16).cuda().eval()
+        self.vl_gpt = vl_gpt.to(torch.Bfloat16).cuda().eval()
 
     def __call__(self, qs, img_files):
         conversation = [
