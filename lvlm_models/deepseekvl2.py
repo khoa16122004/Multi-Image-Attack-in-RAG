@@ -11,8 +11,8 @@ class DeepSeekVL2:
         self.vl_chat_proccessor = DeepseekVLV2Processor.from_pretrained(model_path)
         self.tokenizer = self.vl_chat_proccessor.tokenizer
 
-        self.vl_gpt = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
-        self.vl_gpt = self.vl_gpt.to(torch.bfloat16).cuda().eval()
+        vl_gpt = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
+        self.vl_gpt = vl_gpt.to(torch.float16).cuda().eval()
 
     def __call__(self, qs, img_files):
         conversation = [
@@ -36,7 +36,7 @@ class DeepSeekVL2:
 
         with torch.inference_mdoe():
 
-            cont = vl_gpt.language_model.generate(
+            cont = self.vl_gpt.language_model.generate(
                 inputs_embeds=inputs_embeds,
                 attention_mask=prepare_inputs.attention_mask,
                 pad_token_id=self.tokenizer.eos_token_id,
@@ -57,5 +57,5 @@ if __name__ == "__main__":
 
     
     lvlm = DeepSeekVL2("deepseek-vl2-small")
-    answer = lvlm(qs, img_files)
+    answer = lvlm(question, img_files)
     print(answer)
