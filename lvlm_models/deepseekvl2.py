@@ -19,6 +19,9 @@ class DeepSeekVL2:
             {
                 "role": "<|User|>",
                 "content": qs,
+                "images": [
+                    
+                ]
             },
             {"role": "<|Assistant|>", "content": ""}
         ]
