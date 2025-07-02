@@ -17,10 +17,10 @@ class DeepSeekVL2:
     def __call__(self, qs, img_files):
         conversation = [
             {
-                "role": "User",
+                "role": "<|User|>",
                 "content": qs,
             },
-            {"role": "Assistant", "content": ""}
+            {"role": "<|Assistant|>", "content": ""}
         ]
 
         pil_images = load_pil_images(conversation)
@@ -51,7 +51,7 @@ class DeepSeekVL2:
         return outputs
 
 if __name__ == "__main__":
-    question = "What is the shape of nostrils on bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris)? <image_placeholder><image_placeholder><image_placeholder>"
+    question = "What is the shape of nostrils on bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris)? <image><image><image>"
     img_files = [Image.open(f"test_{i + 1}.jpg") for i in range(3)]
 
     
