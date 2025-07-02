@@ -10,16 +10,8 @@ class DeepSeekVL2:
         model_path = f"deepseek-ai/{pretrained}"
         self.vl_chat_proccessor = DeepseekVLV2Processor.from_pretrained(model_path)
         self.tokenizer = self.vl_chat_proccessor.tokenizer
-        self.tokenizer.add_special_tokens({
-            "pad_token": "<｜▁pad▁｜>",
-            "additional_special_tokens": [
-                "<image>", "<|ref|>", "<|/ref|>", "<|det|>", "<|/det|>", "<|grounding|>",
-                "<|User|>", "<|Assistant|>"
-            ]
-        })
         vl_gpt = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
         self.vl_gpt = vl_gpt.to(torch.bfloat16).cuda().eval()
-        self.vl_gpt.resize_token_embeddings(len(self.tokenizer))
 
 
     def __call__(self, qs, img_files):
@@ -53,8 +45,7 @@ class DeepSeekVL2:
                 use_cache=True
             )
 
-        text_outputs = self.tokenizer.batch_decode(cont, skip_special_tokens=True)
-        outputs = text_outputs
+        outputs = self.tokenizer.decode(cont[0].cpu().tolist(), skip_special_tokens=False)
         return outputs
 
 if __name__ == "__main__":
