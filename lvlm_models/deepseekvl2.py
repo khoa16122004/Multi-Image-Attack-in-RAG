@@ -24,7 +24,7 @@ class DeepSeekVL2:
         ]
 
         pil_images = load_pil_images(conversation)
-        prepare_inputs = self.vl_chat_processor(
+        prepare_inputs = self.vl_chat_proccessor(
             conversations=conversation,
             images=img_files,
             force_batchify=True,
