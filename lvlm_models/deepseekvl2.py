@@ -25,23 +25,23 @@ class DeepSeekVL2:
         ]
 
         pil_images = load_pil_images(conversation)
-        prepare_inputs = vl_chat_processor(
+        prepare_inputs = self.vl_chat_processor(
             conversations=conversation,
             images=pil_images,
             force_batchify=True,
             system_prompt=""
-        ).to(vl_gpt.device)      
+        ).to(self.vl_gpt.device)      
 
-        inputs_embeds = vl_gpt.prepare_inputs_embeds(**prepare_inputs)
+        inputs_embeds = self.vl_gpt.prepare_inputs_embeds(**prepare_inputs)
 
         with torch.inference_mdoe():
 
             cont = vl_gpt.language_model.generate(
                 inputs_embeds=inputs_embeds,
                 attention_mask=prepare_inputs.attention_mask,
-                pad_token_id=tokenizer.eos_token_id,
-                bos_token_id=tokenizer.bos_token_id,
-                eos_token_id=tokenizer.eos_token_id,
+                pad_token_id=self.tokenizer.eos_token_id,
+                bos_token_id=self.tokenizer.bos_token_id,
+                eos_token_id=self.tokenizer.eos_token_id,
                 max_new_tokens=512,
                 do_sample=False,
                 use_cache=True
