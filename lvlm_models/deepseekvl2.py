@@ -56,6 +56,6 @@ if __name__ == "__main__":
     img_files = [Image.open(f"test_{i + 1}.jpg") for i in range(3)]
 
     
-    lvlm = DeepSeekVL2("deepseek-vl2")
+    lvlm = DeepSeekVL2("deepseek-vl2-small")
     answer = lvlm(qs, img_files)
     print(answer)
