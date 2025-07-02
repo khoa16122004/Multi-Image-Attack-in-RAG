@@ -19,7 +19,6 @@ class DeepSeekVL2:
             {
                 "role": "User",
                 "content": qs,
-                "images": img_files
             },
             {"role": "Assistant", "content": ""}
         ]
@@ -27,7 +26,7 @@ class DeepSeekVL2:
         pil_images = load_pil_images(conversation)
         prepare_inputs = self.vl_chat_processor(
             conversations=conversation,
-            images=pil_images,
+            images=img_files,
             force_batchify=True,
             system_prompt=""
         ).to(self.vl_gpt.device)      
