@@ -19,11 +19,6 @@ class DeepSeekVL2:
             {
                 "role": "<|User|>",
                 "content": qs,
-                "images": [
-                    "a",
-                    "b",
-                    "c"
-                ]
             },
             {"role": "<|Assistant|>", "content": ""}
         ]
@@ -37,18 +32,17 @@ class DeepSeekVL2:
 
         inputs_embeds = self.vl_gpt.prepare_inputs_embeds(**prepare_inputs)
 
-        with torch.inference_mode():
 
-            cont = self.vl_gpt.language.generate(
-                inputs_embeds=inputs_embeds,
-                attention_mask=prepare_inputs.attention_mask,
-                pad_token_id=self.tokenizer.eos_token_id,
-                bos_token_id=self.tokenizer.bos_token_id,
-                eos_token_id=self.tokenizer.eos_token_id,
-                max_new_tokens=512,
-                do_sample=False,
-                use_cache=True
-            )
+        cont = self.vl_gpt.language.generate(
+            inputs_embeds=inputs_embeds,
+            attention_mask=prepare_inputs.attention_mask,
+            pad_token_id=self.tokenizer.eos_token_id,
+            bos_token_id=self.tokenizer.bos_token_id,
+            eos_token_id=self.tokenizer.eos_token_id,
+            max_new_tokens=512,
+            do_sample=False,
+            use_cache=True
+        )
 
         outputs = self.tokenizer.decode(cont[0].cpu().tolist(), skip_special_tokens=False)
         return outputs
