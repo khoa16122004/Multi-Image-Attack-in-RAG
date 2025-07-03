@@ -44,14 +44,55 @@ class DeepSeekVL2:
             use_cache=True
         )
 
-        outputs = self.tokenizer.decode(cont[0].cpu().tolist(), skip_special_tokens=False)
+        outputs = self.tokenizer.decode(cont[0].cpu().tolist(), skip_special_tokens=False).split("<｜end▁of▁sentence｜>")[0]
         return outputs
+    def compute_log_prob(self, question, img_files, answer):
+        conversation = [
+            {
+                "role": "<|User|>",
+                "content": question,
+            },
+            {
+                "role": "<|Assistant|>",
+                "content": answer,
+            }
+        ]
 
+        prepare_inputs = self.vl_chat_proccessor(
+            conversations=conversation,
+            images=img_files,
+            force_batchify=True,
+            system_prompt=""
+        ).to(self.vl_gpt.device)
+
+        with torch.no_grad():
+            outputs = self.vl_gpt(
+                input_ids=prepare_inputs.input_ids,
+                attention_mask=prepare_inputs.attention_mask,
+                labels=prepare_inputs.input_ids  # compute full loss
+            )
+            loss = outputs.loss
+
+        answer_only = [{"role": "<|Assistant|>", "content": answer}]
+        answer_ids = self.vl_chat_proccessor.tokenizer.apply_chat_template(
+            answer_only,
+            tokenize=True,
+            add_generation_prompt=False,
+            return_tensors="pt"
+        ).to(self.vl_gpt.device)
+
+        num_answer_tokens = answer_ids.shape[1]
+        total_log_prob = -loss.item() * num_answer_tokens
+        prob = math.exp(total_log_prob)
+        return prob
+    
 if __name__ == "__main__":
     question = "What is the shape of nostrils on bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris)? <image_placeholder> <image_placeholder> <image_placeholder>"
     img_files = [Image.open(f"test_{i + 1}.jpg") for i in range(3)]
 
     
     lvlm = DeepSeekVL2("deepseek-vl2-small")
-    answer = lvlm(question, img_files)
-    print(answer)
+    prob = lvlm.compute_log_prob(question, img_files, "a dog")
+    print(prob)
+    prob = lvlm.compute_log_prob(question, img_files, "a bird")
+    print(prob)
