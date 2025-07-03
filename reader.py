@@ -34,7 +34,7 @@ class Reader(torch.nn.Module):
             from lvlm_models.deepseekvl2 import DeepSeekVL2
             self.instruction = "Answer the given question based only on the visual content of the images. Do not guess or use outside knowledge."
             self.model = DeepSeekVL2(
-                pretrained="deepseek-vl2"
+                pretrained="deepseek-vl2-small"
             )
             self.image_token = "<image_placeholder>"
 
