@@ -47,11 +47,19 @@ class DeepSeekVL2:
         outputs = self.tokenizer.decode(cont[0].cpu().tolist(), skip_special_tokens=False).split("<｜end▁of▁sentence｜>")
         return outputs
     def compute_log_prob(self, question, img_files, answer):
+        # Tạo full conversation: question + answer
         conversation = [
             {"role": "<|User|>", "content": question},
             {"role": "<|Assistant|>", "content": answer},
         ]
 
+        # Tạo conversation với answer rỗng để đếm số token prompt
+        prompt_only_conv = [
+            {"role": "<|User|>", "content": question},
+            {"role": "<|Assistant|>", "content": ""},
+        ]
+
+        # Tokenize full input
         prepare_inputs = self.vl_chat_proccessor(
             conversations=conversation,
             images=img_files,
@@ -59,35 +67,35 @@ class DeepSeekVL2:
             system_prompt=""
         ).to(self.vl_gpt.device)
 
-        input_ids = prepare_inputs.input_ids
-        attention_mask = prepare_inputs.attention_mask
-
-        question_only = [{"role": "<|User|>", "content": question}]
-        question_ids = self.tokenizer.apply_chat_template(
-            question_only,
+        # Tokenize lại để đo chiều dài phần prompt
+        prompt_ids = self.tokenizer.apply_chat_template(
+            prompt_only_conv,
             tokenize=True,
             add_generation_prompt=False,
             return_tensors="pt"
         ).to(self.vl_gpt.device)
+        
+        question_token_len = prompt_ids.shape[1]
 
-        question_token_len = question_ids.shape[1]
-
-        labels = input_ids.clone()
-        labels[:, :question_token_len] = -100  # Mask phần câu hỏi để không tính loss
+        # Tạo labels và mask phần câu hỏi (không tính loss)
+        labels = prepare_inputs.input_ids.clone()
+        labels[:, :question_token_len] = -100  # Mask question tokens
 
         with torch.no_grad():
             outputs = self.vl_gpt(
-                input_ids=input_ids,
-                attention_mask=attention_mask,
+                input_ids=prepare_inputs.input_ids,
+                attention_mask=prepare_inputs.attention_mask,
                 labels=labels,
                 use_cache=True
             )
 
-        loss = outputs.loss  
+        loss = outputs.loss  # Trung bình trên token được tính (chỉ phần answer)
         num_answer_tokens = (labels != -100).sum().item()
         total_log_prob = -loss.item() * num_answer_tokens
         prob = math.exp(total_log_prob)
+
         return prob
+
     
 # if __name__ == "__main__":
 #     question = "What is the shape of nostrils on bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris)? <image_placeholder> <image_placeholder> <image_placeholder>"
