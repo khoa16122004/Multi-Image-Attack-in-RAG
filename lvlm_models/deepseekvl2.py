@@ -48,14 +48,8 @@ class DeepSeekVL2:
         return outputs
     def compute_log_prob(self, question, img_files, answer):
         conversation = [
-            {
-                "role": "<|User|>",
-                "content": question,
-            },
-            {
-                "role": "<|Assistant|>",
-                "content": answer,
-            }
+            {"role": "<|User|>", "content": question},
+            {"role": "<|Assistant|>", "content": answer},
         ]
 
         prepare_inputs = self.vl_chat_proccessor(
@@ -65,24 +59,32 @@ class DeepSeekVL2:
             system_prompt=""
         ).to(self.vl_gpt.device)
 
-        with torch.no_grad():
-            outputs = self.vl_gpt(
-                input_ids=prepare_inputs.input_ids,
-                attention_mask=prepare_inputs.attention_mask,
-                labels=prepare_inputs.input_ids,  
-                use_cache=True
-            )
-            loss = outputs.loss
+        input_ids = prepare_inputs.input_ids
+        attention_mask = prepare_inputs.attention_mask
 
-        answer_only = [{"role": "<|Assistant|>", "content": answer}]
-        answer_ids = self.vl_chat_proccessor.tokenizer.apply_chat_template(
-            answer_only,
+        question_only = [{"role": "<|User|>", "content": question}]
+        question_ids = self.tokenizer.apply_chat_template(
+            question_only,
             tokenize=True,
             add_generation_prompt=False,
             return_tensors="pt"
         ).to(self.vl_gpt.device)
 
-        num_answer_tokens = answer_ids.shape[1]
+        question_token_len = question_ids.shape[1]
+
+        labels = input_ids.clone()
+        labels[:, :question_token_len] = -100  # Mask phần câu hỏi để không tính loss
+
+        with torch.no_grad():
+            outputs = self.vl_gpt(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                labels=labels,
+                use_cache=True
+            )
+
+        loss = outputs.loss  
+        num_answer_tokens = (labels != -100).sum().item()
         total_log_prob = -loss.item() * num_answer_tokens
         prob = math.exp(total_log_prob)
         return prob
