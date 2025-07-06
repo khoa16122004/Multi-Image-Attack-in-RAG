@@ -230,7 +230,7 @@ class Evaluator:
         self.init_llm(args.llm)
         self.method = args.method
         self.target_answer = args.target_answer
-        self.output_dir = f"scores_usingquestion={args.using_question}_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
+        self.output_dir = f"scores_target_answer={self.target_answer}_usingquestion={args.using_question}_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
         os.makedirs(self.output_dir, exist_ok=True)
     
 
@@ -270,7 +270,7 @@ class Evaluator:
         imgs_path = os.path.join(self.attack_result_path, str(sample_id))
         
         if self.target_answer == "gt_answer":
-            gt_answer = answer
+            target_answer = answer
         elif self.target_answer == "golden_answer":
             target_answer = json.load(open(answer_path, "r"))["golden_answer"]
         
@@ -300,7 +300,7 @@ class Evaluator:
         data = {
             "question": question,
             "pred_answer": pred_ans,
-            "original_answer": original_answer,
+            "original_answer": target_answer,
             "resposne_score": score_response,
             "parse_score": end_to_end_score
             
