@@ -47,6 +47,7 @@ class DeepSeekVL2:
         outputs = self.tokenizer.decode(cont[0].cpu().tolist(), skip_special_tokens=False).split("<｜end▁of▁sentence｜>")
         return outputs
     def compute_log_prob(self, question, img_files, answer):
+        # Tạo đoạn hội thoại với cả question và answer
         conversation = [
             {
                 "role": "<|User|>",
@@ -58,6 +59,7 @@ class DeepSeekVL2:
             }
         ]
 
+        # Chuẩn bị input cho model
         prepare_inputs = self.vl_chat_proccessor(
             conversations=conversation,
             images=img_files,
@@ -70,23 +72,36 @@ class DeepSeekVL2:
                 input_ids=prepare_inputs.input_ids,
                 attention_mask=prepare_inputs.attention_mask,
                 labels=prepare_inputs.input_ids,  
-                use_cache=True
+                use_cache=True,
+                return_dict=True
             )
             loss = outputs.loss
 
-        answer_only = [{"role": "<|Assistant|>", "content": answer}]
-        answer_ids = self.vl_chat_proccessor.tokenizer.apply_chat_template(
-            answer_only,
+        # Token hóa cả đoạn hội thoại (user + assistant)
+        full_ids = self.vl_chat_proccessor.tokenizer.apply_chat_template(
+            conversation,
             tokenize=True,
             add_generation_prompt=False,
             return_tensors="pt"
         ).to(self.vl_gpt.device)
 
-        num_answer_tokens = answer_ids.shape[1]
+        # Token hóa chỉ phần user (câu hỏi)
+        prompt_only = [{"role": "<|User|>", "content": question}]
+        prompt_ids = self.vl_chat_proccessor.tokenizer.apply_chat_template(
+            prompt_only,
+            tokenize=True,
+            add_generation_prompt=False,
+            return_tensors="pt"
+        ).to(self.vl_gpt.device)
+
+        # Tính số token trong phần trả lời (answer)
+        num_answer_tokens = full_ids.shape[1] - prompt_ids.shape[1]
+
+        # Tổng log-probability
         total_log_prob = -loss.item() * num_answer_tokens
         prob = math.exp(total_log_prob)
         return prob
-    
+        
 # if __name__ == "__main__":
 #     question = "What is the shape of nostrils on bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris)? <image_placeholder> <image_placeholder> <image_placeholder>"
 #     img_files = [Image.open(f"test_{i + 1}.jpg") for i in range(3)]
