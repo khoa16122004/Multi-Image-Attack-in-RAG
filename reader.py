@@ -30,7 +30,7 @@ class Reader(torch.nn.Module):
             )
             self.image_token = "<image>"
 
-        elif model_name == "deepseek-vl2":
+        elif model_name == "deepseek-vl2-tiny":
             from lvlm_models.deepseekvl2 import DeepSeekVL2
             self.instruction = "Answer the given question based only on the visual content of the images. Do not guess or use outside knowledge. Just return the answer and nothing else."
             self.model = DeepSeekVL2(
