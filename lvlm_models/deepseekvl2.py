@@ -47,19 +47,17 @@ class DeepSeekVL2:
         outputs = self.tokenizer.decode(cont[0].cpu().tolist(), skip_special_tokens=False).split("<｜end▁of▁sentence｜>")
         return outputs
     def compute_log_prob(self, question, img_files, answer):
-        # Format đúng: user -> assistant
         conversation = [
             {
-                "role": "user",
+                "role": "<|User|>",
                 "content": question,
             },
             {
-                "role": "assistant",
+                "role": "<|Assistant|>",
                 "content": answer,
             }
         ]
 
-        # Tiền xử lý cho model
         prepare_inputs = self.vl_chat_proccessor(
             conversations=conversation,
             images=img_files,
@@ -67,18 +65,16 @@ class DeepSeekVL2:
             system_prompt=""
         ).to(self.vl_gpt.device)
 
-        # Tính loss
         with torch.no_grad():
             outputs = self.vl_gpt(
                 input_ids=prepare_inputs.input_ids,
                 attention_mask=prepare_inputs.attention_mask,
-                labels=prepare_inputs.input_ids,
+                labels=prepare_inputs.input_ids,  
                 use_cache=True
             )
             loss = outputs.loss
 
-        # Lấy số token chỉ của câu trả lời để scale loss đúng
-        answer_only = [{"role": "assistant", "content": answer}]
+        answer_only = [{"role": "<|Assistant|>", "content": answer}]
         answer_ids = self.vl_chat_proccessor.tokenizer.apply_chat_template(
             answer_only,
             tokenize=True,
@@ -87,13 +83,9 @@ class DeepSeekVL2:
         ).to(self.vl_gpt.device)
 
         num_answer_tokens = answer_ids.shape[1]
-
-        # Tổng log-prob
         total_log_prob = -loss.item() * num_answer_tokens
         prob = math.exp(total_log_prob)
-
         return prob
-
     
 # if __name__ == "__main__":
 #     question = "What is the shape of nostrils on bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris)? <image_placeholder> <image_placeholder> <image_placeholder>"
