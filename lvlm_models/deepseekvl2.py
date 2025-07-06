@@ -47,19 +47,19 @@ class DeepSeekVL2:
         outputs = self.tokenizer.decode(cont[0].cpu().tolist(), skip_special_tokens=False).split("<｜end▁of▁sentence｜>")
         return outputs
     def compute_log_prob(self, question, img_files, answer):
-        # Tạo đoạn hội thoại với cả question và answer
+        # Format đúng: user -> assistant
         conversation = [
             {
-                "role": "<|User|>",
+                "role": "user",
                 "content": question,
             },
             {
-                "role": "<|Assistant|>",
+                "role": "assistant",
                 "content": answer,
             }
         ]
 
-        # Chuẩn bị input cho model
+        # Tiền xử lý cho model
         prepare_inputs = self.vl_chat_proccessor(
             conversations=conversation,
             images=img_files,
@@ -67,41 +67,34 @@ class DeepSeekVL2:
             system_prompt=""
         ).to(self.vl_gpt.device)
 
+        # Tính loss
         with torch.no_grad():
             outputs = self.vl_gpt(
                 input_ids=prepare_inputs.input_ids,
                 attention_mask=prepare_inputs.attention_mask,
-                labels=prepare_inputs.input_ids,  
-                use_cache=True,
-                return_dict=True
+                labels=prepare_inputs.input_ids,
+                use_cache=True
             )
             loss = outputs.loss
 
-        # Token hóa cả đoạn hội thoại (user + assistant)
-        full_ids = self.vl_chat_proccessor.tokenizer.apply_chat_template(
-            conversation,
+        # Lấy số token chỉ của câu trả lời để scale loss đúng
+        answer_only = [{"role": "assistant", "content": answer}]
+        answer_ids = self.vl_chat_proccessor.tokenizer.apply_chat_template(
+            answer_only,
             tokenize=True,
             add_generation_prompt=False,
             return_tensors="pt"
         ).to(self.vl_gpt.device)
 
-        # Token hóa chỉ phần user (câu hỏi)
-        prompt_only = [{"role": "<|User|>", "content": question}]
-        prompt_ids = self.vl_chat_proccessor.tokenizer.apply_chat_template(
-            prompt_only,
-            tokenize=True,
-            add_generation_prompt=False,
-            return_tensors="pt"
-        ).to(self.vl_gpt.device)
+        num_answer_tokens = answer_ids.shape[1]
 
-        # Tính số token trong phần trả lời (answer)
-        num_answer_tokens = full_ids.shape[1] - prompt_ids.shape[1]
-
-        # Tổng log-probability
+        # Tổng log-prob
         total_log_prob = -loss.item() * num_answer_tokens
         prob = math.exp(total_log_prob)
+
         return prob
-        
+
+    
 # if __name__ == "__main__":
 #     question = "What is the shape of nostrils on bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris)? <image_placeholder> <image_placeholder> <image_placeholder>"
 #     img_files = [Image.open(f"test_{i + 1}.jpg") for i in range(3)]
