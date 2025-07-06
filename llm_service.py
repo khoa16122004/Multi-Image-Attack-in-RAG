@@ -1,7 +1,7 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, LlamaForCausalLM, LlamaTokenizer, MistralForCausalLM
 import os
-# from openai import OpenAI
+from openai import OpenAI
 from typing import List, Optional
 import dotenv
 dotenv.load_dotenv()

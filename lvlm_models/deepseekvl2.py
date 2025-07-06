@@ -69,7 +69,7 @@ class DeepSeekVL2:
             outputs = self.vl_gpt(
                 input_ids=prepare_inputs.input_ids,
                 attention_mask=prepare_inputs.attention_mask,
-                labels=prepare_inputs.input_ids,  # compute full loss,
+                labels=prepare_inputs.input_ids,  
                 use_cache=True
             )
             loss = outputs.loss
