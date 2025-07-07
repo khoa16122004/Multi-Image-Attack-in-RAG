@@ -50,7 +50,10 @@ def main(args):
         ax[row, col].legend()
 
     plt.tight_layout()
-    plt.show()
+    
+    save_path = f"attack_plot_std{args.std}_nk{args.n_k}.png"
+    plt.savefig(save_path, dpi=300)
+    print(f"Figure saved to {save_path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
