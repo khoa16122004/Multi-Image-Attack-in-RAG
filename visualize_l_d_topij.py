@@ -11,7 +11,7 @@ matplotlib.rcParams['ps.fonttype'] = 42
 plt.rc('legend', fontsize=16)
 plt.rc('xtick', labelsize=14)
 plt.rc('ytick', labelsize=14)
-plt.rc('axes', labelsize=20)
+plt.rc('axes', labelsize=15)
 
 
 def main(args):
@@ -62,8 +62,8 @@ def main(args):
                 continue
 
         # Set titles and labels
-        ax[0][col].set_title(f"{model_name}")
-        ax[1][col].set_title(f"{model_name}")
+        ax[0][col].set_title(f"{model_name}", fontsize=16)
+        ax[1][col].set_title(f"{model_name}", fontsize=16)
         ax[0][col].set_xlabel("Generation Step")
         ax[1][col].set_xlabel("Generation Step")
         ax[0][col].set_ylabel("Retrieval Error score")
