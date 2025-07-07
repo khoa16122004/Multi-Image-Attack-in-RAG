@@ -91,8 +91,8 @@ if __name__ == "__main__":
 
     
     lvlm = DeepSeekVL2("deepseek-vl2-tiny")
-    print(lvlm(question, img_files))
-    prob_1 = lvlm.compute_log_prob(question, img_files, "The shape of nostrils on the bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris) is not clearly visible in the provided images. The images appear to be of different angles or possibly cropped views that do not show the entire structure of the bird's bill. To accurately determine the shape of the nostrils, additional information or a clearer view would be necessary.")
+    answer = lvlm(question, img_files)
+    prob_1 = lvlm.compute_log_prob(question, img_files, answer)
     print(prob_1)
     prob_2 = lvlm.compute_log_prob(question, img_files, "a bird")
     print(prob_2)
