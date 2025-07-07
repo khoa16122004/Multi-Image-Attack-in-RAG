@@ -1,13 +1,14 @@
-from util import *
+import os
 import torch
-import matplotlib.pyplot as plt
-import numpy as np
+import pickle
 import argparse
+import numpy as np
+import matplotlib.pyplot as plt
+from util import arkiv_proccess
 
 
 def main(args):
-    
-    model = [
+    models = [
         "llava-one",
         "llava-next",
         # "deepseek-vl2-tiny",
@@ -15,26 +16,26 @@ def main(args):
         # "itern-vl"
     ]
 
-    color = [
-        'blue',
-        'red'
-    ]
-
+    colors = ['blue', 'red']
+    model_count = len(models)
     lines = [int(line.strip()) for line in open(args.sample_path, "r")]
 
-    figure, ax = plt.subplots(3, 5) # n_k x n_model
+    fig, ax = plt.subplots(1, model_count, figsize=(5 * model_count, 4))
 
-    for idx, model_name in enumerate(model):
+    if model_count == 1:
+        ax = [ax]  # Đảm bảo ax luôn là list
+
+    for idx, model_name in enumerate(models):
         model_result_dir = os.path.join(args.attack_result_dir, f"clip_{model_name}_{args.std}")
-        full_score_0 = []
-        full_score_1 = []
+        full_score_0, full_score_1 = [], []
+
         for sample_id in lines:
             path = os.path.join(model_result_dir, str(sample_id), f"scores_{args.n_k}.pkl")
             with open(path, "rb") as f:
                 scores = pickle.load(f)
                 scores = arkiv_proccess(scores)
                 scores = [np.array(gen) for gen in scores]
-                min_scores_0 = [np.min(np.array(gen[:, 0])) for gen in scores]
+                min_scores_0 = [np.min(gen[:, 0]) for gen in scores]
                 min_scores_1 = [np.min(gen[:, 1]) for gen in scores]
                 full_score_0.append(min_scores_0)
                 full_score_1.append(min_scores_1)
@@ -42,29 +43,31 @@ def main(args):
         full_score_0 = np.array(full_score_0)
         full_score_1 = np.array(full_score_1)
 
-        row = 0
-        col = idx
-        ax[row, col].plot(full_score_0, label='Retrieval Error Score', color=color[0])
-        ax[row, col].plot(full_score_1, label='Generation Error Score', color=color[1])
-        ax[row, col].set_title(model_name)
-        ax[row, col].set_ylim([0, 1])
-        ax[row, col].legend()
+        mean_score_0 = np.mean(full_score_0, axis=0)
+        mean_score_1 = np.mean(full_score_1, axis=0)
+
+        ax[idx].plot(mean_score_0, label='Retrieval Error Score', color=colors[0])
+        ax[idx].plot(mean_score_1, label='Generation Error Score', color=colors[1])
+        ax[idx].set_title(model_name)
+        ax[idx].set_ylim([0, 1])
+        ax[idx].legend()
+        ax[idx].set_xlabel("Generation Step")
+        ax[idx].set_ylabel("Min Error Score")
 
     plt.tight_layout()
-    
-    save_path = f"figure_visuattack_plot_std{args.std}_nk{args.n_k}.png"
+
+    os.makedirs("figure_visuattack_plot_std", exist_ok=True)
+    save_path = f"figure_visuattack_plot_std/std{args.std}_nk{args.n_k}.png"
     plt.savefig(save_path, dpi=300)
-    print(f"Figure saved to {save_path}")
+    print(f"✅ Figure saved to {save_path}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--sample_path", type=str)
-    parser.add_argument("--n_k", type=int, default=1, help="Number of attack")
+    parser.add_argument("--sample_path", type=str, required=True)
+    parser.add_argument("--n_k", type=int, default=1, help="Number of attack steps")
     parser.add_argument("--std", type=float, default=0.1, help="Standard deviation for initialization")
-    parser.add_argument("--attack_result_dir", type=str, required=True)    
-    args = parser.parse_args()  
+    parser.add_argument("--attack_result_dir", type=str, required=True)
+    args = parser.parse_args()
+
     main(args)
-
-
-
-
