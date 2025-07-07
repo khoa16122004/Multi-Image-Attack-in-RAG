@@ -47,19 +47,16 @@ class DeepSeekVL2:
         outputs = self.tokenizer.decode(cont[0].cpu().tolist(), skip_special_tokens=False).split("<｜end▁of▁sentence｜>")
         return outputs
     def compute_log_prob(self, question, img_files, answer):
-        # Tạo full conversation: question + answer
         conversation = [
             {"role": "<|User|>", "content": question},
             {"role": "<|Assistant|>", "content": answer},
         ]
 
-        # Tạo conversation với answer rỗng để đếm số token prompt
         prompt_only_conv = [
             {"role": "<|User|>", "content": question},
             {"role": "<|Assistant|>", "content": ""},
         ]
 
-        # Tokenize full input
         prepare_inputs = self.vl_chat_proccessor(
             conversations=conversation,
             images=img_files,

@@ -22,7 +22,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--n_k", type=int, required=True)
     # parser.add_argument("--dataset_dir", type=str, required=True)
-    parser.add_argument("--retriever_name", type=str, default="clip")
+    parser.add_argument("--retriever_name", type=str, default= "clip")
     parser.add_argument("--reader_name", type=str, default="llava-one")
     parser.add_argument("--std", type=float, default=0.05)
     parser.add_argument("--run_path", type=str, default="run.txt")
