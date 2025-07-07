@@ -33,8 +33,8 @@ def main(args):
             with open(path, "rb") as f:
                 scores = pickle.load(f)
                 scores = arkiv_proccess(scores)
-                min_scores_0 = [np.min(np.array(gen[:, 0])) for gen in scores]
-                min_scores_1 = [np.min(gen[:, 1]) for gen in scores]
+                min_scores_0 = [np.min(np.concatenate(gen[:, 0])) for gen in scores]
+                min_scores_1 = [np.min(np.concatenate(gen[:, 1])) for gen in scores]
                 full_score_0.append(min_scores_0)
                 full_score_1.append(min_scores_1)
 
