@@ -20,6 +20,8 @@ color = [
 n_k = 1
 attack_result_dir = r"/data/elo/khoatn/VisualRAG/Multi-Image-Attack-in-RAG/attack_result_usingquestion=1"
 std="0.05"
+run_path = "run.txt"
+lines = [int(line.strip()) for line in open(run_path, "r")]
 for model_name in model:
     model_result_dir = os.path.join(attack_result_dir, f"{model_name}_{std}", )
     avg_score_0 = []
