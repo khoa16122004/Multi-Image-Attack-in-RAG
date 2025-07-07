@@ -2,43 +2,64 @@ from util import *
 import torch
 import matplotlib.pyplot as plt
 import numpy as np
+import argparse
 
 
-model = [
-    "llava-one",
-    "llava-next",
-    "deepseek-vl2-tiny",
-    "qwen-vl",
-    "itern-vl"
-]
+def main(args):
+    
+    model = [
+        "llava-one",
+        "llava-next",
+        # "deepseek-vl2-tiny",
+        # "qwen-vl",
+        # "itern-vl"
+    ]
 
-color = [
-    'blue',
-    'red'
-]
+    color = [
+        'blue',
+        'red'
+    ]
 
-n_k = 1
-attack_result_dir = r"/data/elo/khoatn/VisualRAG/Multi-Image-Attack-in-RAG/attack_result_usingquestion=1"
-std="0.05"
-run_path = "run.txt"
-lines = [int(line.strip()) for line in open(run_path, "r")]
-for model_name in model:
-    model_result_dir = os.path.join(attack_result_dir, f"{model_name}_{std}", )
-    avg_score_0 = []
-    avg_score_1 = []
-    for sample_id in lines:
-        path = os.path.join(model_result_dir, str(sample_id), f"scores_{n_k}.pkl")
-        with open(path, "rb") as f:
-            scores = pickle.load(f)
-            scores = arkiv_proccess(scores)
-            print(scores.shape)
-            raise
-            min_score_0 = np.min(final_front_score[:, 0])
-            min_score_1 = np.min(final_front_score[:, 1])
-            avg_score_0.append(min_score_0)
-            avg_score_1.append(min_score_1)
+    lines = [int(line.strip()) for line in open(args.sample_path, "r")]
 
-    # calculate the
+    figure, ax = plt.subplots(3, 5) # n_k x n_model
+
+    for idx, model_name in enumerate(model):
+        model_result_dir = os.path.join(args.attack_result_dir, f"{model_name}_{args.std}")
+        full_score_0 = []
+        full_score_1 = []
+        for sample_id in lines:
+            path = os.path.join(model_result_dir, str(sample_id), f"scores_{args.n_k}.pkl")
+            with open(path, "rb") as f:
+                scores = pickle.load(f)
+                scores = arkiv_proccess(scores)
+                min_scores_0 = np.min(scores[:, :, 0])
+                min_scores_1 = np.min(scores[:, :, 1])
+                full_score_0.append(min_scores_0)
+                full_score_1.append(min_scores_1)
+
+        full_score_0 = np.array(full_score_0)
+        full_score_1 = np.array(full_score_1)
+
+        row = 0
+        col = idx
+        ax[row, col].plot(full_score_0, label='Retrieval Error Score', color=color[0])
+        ax[row, col].plot(full_score_1, label='Generation Error Score', color=color[1])
+        ax[row, col].set_title(model_name)
+        ax[row, col].set_ylim([0, 1])
+        ax[row, col].legend()
+
+    plt.tight_layout()
+    plt.show()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--sample_path", type=str)
+    parser.add_argument("--n_k", type=int, default=1, help="Number of attack")
+    parser.add_argument("--std", type=float, default=0.1, help="Standard deviation for initialization")
+    parser.add_argument("--attack_result_dir", type=str, required=True)    
+    args = parser.parse_args()  
+    main(args)
 
 
 
