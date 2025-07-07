@@ -52,12 +52,11 @@ class DeepSeekVL2:
             {"role": "<|User|>", "content": question},
             {"role": "<|Assistant|>", "content": answer},
         ]
-        pil_images = [Image.open(f) if isinstance(f, str) else f for f in img_files]
 
         # Prepare inputs with DeepSeek processor
         prepare = self.vl_chat_proccessor(
             conversations=conversation,
-            images=pil_images,
+            images=img_files,
             force_batchify=True,
             system_prompt=""
         ).to(self.vl_gpt.device)
@@ -70,7 +69,8 @@ class DeepSeekVL2:
             outputs = self.vl_gpt(
                 input_ids=input_ids,
                 attention_mask=attention_mask,
-                return_dict=True
+                return_dict=True,
+                use_cache=True,
             )
 
         # Tính tổng log-prob của phần trả lời
