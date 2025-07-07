@@ -51,7 +51,7 @@ def main(args):
 
     plt.tight_layout()
     
-    save_path = f"attack_plot_std{args.std}_nk{args.n_k}.png"
+    save_path = f"figure_visualization/attack_plot_std{args.std}_nk{args.n_k}.png"
     plt.savefig(save_path, dpi=300)
     print(f"Figure saved to {save_path}")
 
