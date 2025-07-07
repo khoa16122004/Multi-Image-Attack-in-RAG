@@ -8,10 +8,10 @@ from util import arkiv_proccess
 import matplotlib
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
-plt.rc('legend', fontsize=16)
+plt.rc('legend', fontsize=18)
 plt.rc('xtick', labelsize=14)
 plt.rc('ytick', labelsize=14)
-plt.rc('axes', labelsize=15)
+plt.rc('axes', labelsize=18)
 
 
 def main(args):
