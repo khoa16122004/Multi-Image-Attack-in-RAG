@@ -53,28 +53,42 @@ class DeepSeekVL2:
             {"role": "<|Assistant|>", "content": answer},
         ]
         pil_images = [Image.open(f) if isinstance(f, str) else f for f in img_files]
-        prepare = self.vl_chat_proccessor(conversations=conversation, images=pil_images, force_batchify=True, system_prompt="").to(self.vl_gpt.device)
 
-        prompt_conv = [
-            {"role": "<|User|>", "content": question},
-            {"role": "<|Assistant|>", "content": ""}
-        ]
-        prompt_ids = self.tokenizer.apply_chat_template(prompt_conv, tokenize=True, add_generation_prompt=False, return_tensors="pt").to(self.vl_gpt.device)
-        q_len = prompt_ids.shape[1]
+        # Prepare inputs with DeepSeek processor
+        prepare = self.vl_chat_proccessor(
+            conversations=conversation,
+            images=pil_images,
+            force_batchify=True,
+            system_prompt=""
+        ).to(self.vl_gpt.device)
 
-        labels = prepare.input_ids.clone()
-        labels[:, :q_len] = -100
+        input_ids = prepare.input_ids
+        attention_mask = prepare.attention_mask
 
+        # Chạy mô hình để lấy logits
         with torch.no_grad():
-            out = self.vl_gpt(input_ids=prepare.input_ids, 
-                              attention_mask=prepare.attention_mask, 
-                              labels=labels,
-                              use_cache=True
-                              )
-            loss = out.loss.item()
-        num_tokens = (labels != -100).sum().item()
-        total_log_prob = -loss * num_tokens
-        return math.exp(total_log_prob)
+            outputs = self.vl_gpt(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                return_dict=True
+            )
+
+        # Tính tổng log-prob của phần trả lời
+        logits = outputs.logits[:, :-1]  # shift right để khớp với label
+        labels = input_ids[:, 1:]        # label là token kế tiếp
+
+        # Lấy xác suất (log_softmax) và mask vị trí cần tính (chỉ phần trả lời)
+        log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
+        log_probs_answer = log_probs.gather(2, labels.unsqueeze(-1)).squeeze(-1)
+
+        # Tìm vị trí bắt đầu của câu trả lời
+        answer_start = (input_ids[0] == self.tokenizer.convert_tokens_to_ids("<|Assistant|>")).nonzero(as_tuple=True)[0][0] + 1
+        log_probs_answer_part = log_probs_answer[0, answer_start:]
+
+        # Tính tổng log-prob
+        total_log_prob = log_probs_answer_part.sum().item()
+
+        return math.exp(total_log_prob)  # = p(answer | question, imgs)
 
     
 if __name__ == "__main__":
