@@ -45,7 +45,7 @@ class DeepSeekVL2:
         )
 
         outputs = self.tokenizer.decode(cont[0].cpu().tolist(), skip_special_tokens=False)
-        return outputs
+        return [outputs]
     
     def compute_log_prob(self, question, img_files, answer):
         conversation = [
