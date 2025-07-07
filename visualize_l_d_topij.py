@@ -71,7 +71,7 @@ def main(args):
 
     plt.tight_layout()
     os.makedirs("figure_visuattack_plot_std", exist_ok=True)
-    save_path = f"figure_visuattack_plot_std/std{args.std}_nk1-2-3.png"
+    save_path = f"figure_visuattack_plot_std/std{args.std}_nk1-2-3.pdf"
     plt.savefig(save_path, dpi=300)
     print(f"✅ Figure saved to {save_path}")
 
