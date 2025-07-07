@@ -4,6 +4,7 @@ from deepseek_vl2.utils.io import load_pil_images
 import torch
 import math
 from PIL import Image
+import torchvision.transforms as T
 
 class DeepSeekVL2:
     def __init__(self, pretrained):
@@ -85,14 +86,30 @@ class DeepSeekVL2:
         return math.exp(total_log_prob)  # = p(answer | question, imgs)
 
     
+
+
+def add_gaussian_noise(img, std=0.1):
+    transform_to_tensor = T.ToTensor()
+    transform_to_pil = T.ToPILImage()
+
+    tensor_img = transform_to_tensor(img)
+    noise = torch.randn(tensor_img.size()) * std
+    noisy_img = tensor_img + noise
+    noisy_img = torch.clamp(noisy_img, 0, 1)
+
+    return transform_to_pil(noisy_img)
+
 if __name__ == "__main__":
     question = "What is the shape of nostrils on bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris)? <image_placeholder> <image_placeholder> <image_placeholder>"
-    img_files = [Image.open(f"test_{i + 1}.jpg") for i in range(3)]
+    img_files = [Image.open(f"test_{i + 1}.jpg").convert("RGB") for i in range(3)]
 
-    
     lvlm = DeepSeekVL2("deepseek-vl2-tiny")
     answer = lvlm(question, img_files)
-    prob_1 = lvlm.compute_log_prob(question, img_files, answer)
-    print(prob_1)
-    prob_2 = lvlm.compute_log_prob(question, img_files, "a bird a bird a bird a bird a bird")
-    print(prob_2)
+    print(answer)
+
+    # Add noise
+    std = 0.1  # Bạn có thể thử các giá trị như 0.05, 0.1, 0.2
+    noisy_imgs = [add_gaussian_noise(img, std=std) for img in img_files]
+
+    adv_answer = lvlm(question, noisy_imgs)
+    print(adv_answer)
