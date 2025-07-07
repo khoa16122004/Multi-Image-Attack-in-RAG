@@ -11,7 +11,7 @@ matplotlib.rcParams['ps.fonttype'] = 42
 plt.rc('legend', fontsize=18)
 plt.rc('xtick', labelsize=14)
 plt.rc('ytick', labelsize=14)
-plt.rc('axes', labelsize=18)
+plt.rc('axes', labelsize=20)
 
 
 def main(args):
