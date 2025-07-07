@@ -80,7 +80,7 @@ class DeepSeekVL2:
         answer_start = (input_ids[0] == self.tokenizer.convert_tokens_to_ids("<|Assistant|>")).nonzero(as_tuple=True)[0][0] + 1
         log_probs_answer_part = log_probs_answer[0, answer_start:]
 
-        total_log_prob = log_probs_answer_part.sum().item()
+        total_log_prob = log_probs_answer_part.mean().item()
 
         return math.exp(total_log_prob)  # = p(answer | question, imgs)
 
