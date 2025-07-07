@@ -65,7 +65,7 @@ def main(args):
                 ax[row][col].set_yticks([])
 
             ax[row][col].set_title(f"{model_name} | n_k={n_k}")
-            ax[row][col].set_ylim([0.0, 0.6])
+            ax[row][col].set_ylim([0.5, 1.2])
             ax[row][col].set_xlabel("Generation Step")
             ax[row][col].set_ylabel("Min Error Score")
 
