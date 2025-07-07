@@ -53,7 +53,7 @@ class DeepSeekVL2:
             {"role": "<|Assistant|>", "content": answer},
         ]
         pil_images = [Image.open(f) if isinstance(f, str) else f for f in img_files]
-        prepare = self.processor(conversations=conversation, images=pil_images, force_batchify=True, system_prompt="").to(self.model.device)
+        prepare = self.vl_chat_proccessor(conversations=conversation, images=pil_images, force_batchify=True, system_prompt="").to(self.model.device)
 
         prompt_conv = [
             {"role": "<|User|>", "content": question},
