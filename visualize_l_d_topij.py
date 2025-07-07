@@ -29,7 +29,7 @@ def main(args):
         full_score_0 = []
         full_score_1 = []
         for sample_id in lines:
-            path = os.path.join(model_result_dir, str(sample_id), f"scores_{args.n_k}.pkl")
+            path = os.path.join(model_result_dir, str(sample_id), f"clip_scores_{args.n_k}.pkl")
             with open(path, "rb") as f:
                 scores = pickle.load(f)
                 scores = arkiv_proccess(scores)
