@@ -16,22 +16,15 @@ def main(args):
         "itern-vl"
     ]
 
-    colors = ['blue', 'red']
-    model_count = 5
     n_k_list = [1, 2, 3]
+    colors = ['blue', 'green', 'red']
     lines = [int(line.strip()) for line in open(args.sample_path, "r")]
 
-    fig, ax = plt.subplots(len(n_k_list), model_count, figsize=(5 * model_count, 4 * len(n_k_list)))
+    fig, ax = plt.subplots(2, len(models), figsize=(5 * len(models), 8))  # 2 hàng: retrieval + generation
 
-    if len(n_k_list) == 1:
-        ax = [ax]
-    if model_count == 1:
-        ax = [[a] if isinstance(a, plt.Axes) else a for a in ax]
-
-    for row, n_k in enumerate(n_k_list):
-        for col in range(model_count):
-            model_name = models[col]
-            model_result_dir = os.path.join(args.attack_result_dir, f"clip_{model_name}_{args.std}")
+    for col, model_name in enumerate(models):
+        model_result_dir = os.path.join(args.attack_result_dir, f"clip_{model_name}_{args.std}")
+        for idx_nk, n_k in enumerate(n_k_list):
             full_score_0, full_score_1 = [], []
 
             try:
@@ -54,24 +47,37 @@ def main(args):
                 mean_score_0 = np.mean(full_score_0, axis=0)
                 mean_score_1 = np.mean(full_score_1, axis=0)
 
-                ax[row][col].plot(mean_score_0, label='Retrieval Error Score', color=colors[0])
-                ax[row][col].plot(mean_score_1, label='Generation Error Score', color=colors[1])
-                ax[row][col].legend()
+                ax[0][col].plot(mean_score_0, label=f"n_k={n_k}", color=colors[idx_nk])
+                ax[1][col].plot(mean_score_1, label=f"n_k={n_k}", color=colors[idx_nk])
 
             except FileNotFoundError:
-                print(f"⚠️  Missing data for model={model_name}, n_k={n_k}. Leaving blank.")
-                ax[row][col].text(0.5, 0.5, "No Data", fontsize=12, ha='center', va='center')
-                ax[row][col].set_xticks([])
-                ax[row][col].set_yticks([])
+                print(f"⚠️  Missing data for model={model_name}, n_k={n_k}. Skipping.")
+                continue
 
-            ax[row][col].set_title(f"{model_name} | n_k={n_k}")
-            ax[row][col].set_ylim([0.5, 1.2])
-            ax[row][col].set_xlabel("Generation Step")
-            ax[row][col].set_ylabel("Min Error Score")
+        # Set titles and labels
+        ax[0][col].set_title(f"{model_name} (Retrieval)")
+        ax[1][col].set_title(f"{model_name} (Generation)")
+        ax[0][col].set_xlabel("Generation Step")
+        ax[1][col].set_xlabel("Generation Step")
+        ax[0][col].set_ylabel("Min Error Score")
+        ax[1][col].set_ylabel("Min Error Score")
+        ax[0][col].legend()
+        ax[1][col].legend()
+
+        # Auto y-lim per subplot
+        if len(ax[0][col].lines) > 0:
+            all_y_0 = np.concatenate([line.get_ydata() for line in ax[0][col].lines])
+            ymin_0, ymax_0 = all_y_0.min() - 0.02, all_y_0.max() + 0.02
+            ax[0][col].set_ylim(max(ymin_0, 0), min(ymax_0, 1))
+
+        if len(ax[1][col].lines) > 0:
+            all_y_1 = np.concatenate([line.get_ydata() for line in ax[1][col].lines])
+            ymin_1, ymax_1 = all_y_1.min() - 0.02, all_y_1.max() + 0.02
+            ax[1][col].set_ylim(max(ymin_1, 0), min(ymax_1, 1))
 
     plt.tight_layout()
     os.makedirs("figure_visuattack_plot_std", exist_ok=True)
-    save_path = f"figure_visuattack_plot_std/std{args.std}_nk1-2-3.pdf"
+    save_path = f"figure_visuattack_plot_std/std{args.std}_by_metric.pdf"
     plt.savefig(save_path, dpi=300)
     print(f"✅ Figure saved to {save_path}")
 
