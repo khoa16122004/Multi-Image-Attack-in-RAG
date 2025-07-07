@@ -47,8 +47,8 @@ def main(args):
                 mean_score_0 = np.mean(full_score_0, axis=0)
                 mean_score_1 = np.mean(full_score_1, axis=0)
 
-                ax[0][col].plot(mean_score_0, label=f"n_k={n_k}", color=colors[idx_nk])
-                ax[1][col].plot(mean_score_1, label=f"n_k={n_k}", color=colors[idx_nk])
+                ax[0][col].plot(mean_score_0, label=f"top_k={n_k}", color=colors[idx_nk])
+                ax[1][col].plot(mean_score_1, label=f"top_k={n_k}", color=colors[idx_nk])
 
             except FileNotFoundError:
                 print(f"⚠️  Missing data for model={model_name}, n_k={n_k}. Skipping.")
@@ -67,12 +67,12 @@ def main(args):
         # Auto y-lim per subplot
         if len(ax[0][col].lines) > 0:
             all_y_0 = np.concatenate([line.get_ydata() for line in ax[0][col].lines])
-            ymin_0, ymax_0 = all_y_0.min() - 0.02, all_y_0.max() + 0.02
-            ax[0][col].set_ylim(max(ymin_0, 0), min(ymax_0, 1))
+            # ymin_0, ymax_0 = all_y_0.min() - 0.02, all_y_0.max() + 0.1
+            ax[0][col].set_ylim(0.97, 1.2)
 
         if len(ax[1][col].lines) > 0:
             all_y_1 = np.concatenate([line.get_ydata() for line in ax[1][col].lines])
-            ymin_1, ymax_1 = all_y_1.min() - 0.02, all_y_1.max() + 0.02
+            ymin_1, ymax_1 = all_y_1.min() - 0.01, all_y_1.max() + 0.1
             ax[1][col].set_ylim(max(ymin_1, 0), min(ymax_1, 1))
 
     plt.tight_layout()
