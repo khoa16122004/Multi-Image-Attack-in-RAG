@@ -94,5 +94,5 @@ if __name__ == "__main__":
     answer = lvlm(question, img_files)
     prob_1 = lvlm.compute_log_prob(question, img_files, answer)
     print(prob_1)
-    prob_2 = lvlm.compute_log_prob(question, img_files, "a bird")
+    prob_2 = lvlm.compute_log_prob(question, img_files, "a bird a bird a bird a bird a bird")
     print(prob_2)
