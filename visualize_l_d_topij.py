@@ -68,7 +68,7 @@ def main(args):
         if len(ax[0][col].lines) > 0:
             all_y_0 = np.concatenate([line.get_ydata() for line in ax[0][col].lines])
             # ymin_0, ymax_0 = all_y_0.min() - 0.02, all_y_0.max() + 0.1
-            ax[0][col].set_ylim(0.97, 1.05)
+            ax[0][col].set_ylim(0.97, 1.02)
 
         if len(ax[1][col].lines) > 0:
             all_y_1 = np.concatenate([line.get_ydata() for line in ax[1][col].lines])
