@@ -55,12 +55,12 @@ def main(args):
                 continue
 
         # Set titles and labels
-        ax[0][col].set_title(f"{model_name} (Retrieval)")
-        ax[1][col].set_title(f"{model_name} (Generation)")
+        ax[0][col].set_title(f"{model_name}")
+        ax[1][col].set_title(f"{model_name}")
         ax[0][col].set_xlabel("Generation Step")
         ax[1][col].set_xlabel("Generation Step")
-        ax[0][col].set_ylabel("Min Error Score")
-        ax[1][col].set_ylabel("Min Error Score")
+        ax[0][col].set_ylabel("Retrieval Error score")
+        ax[1][col].set_ylabel("Generation Error score")
         ax[0][col].legend()
         ax[1][col].legend()
 
