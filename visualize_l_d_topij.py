@@ -25,11 +25,11 @@ def main(args):
     figure, ax = plt.subplots(3, 5) # n_k x n_model
 
     for idx, model_name in enumerate(model):
-        model_result_dir = os.path.join(args.attack_result_dir, f"{model_name}_{args.std}")
+        model_result_dir = os.path.join(args.attack_result_dir, f"clip_{model_name}_{args.std}")
         full_score_0 = []
         full_score_1 = []
         for sample_id in lines:
-            path = os.path.join(model_result_dir, str(sample_id), f"clip_scores_{args.n_k}.pkl")
+            path = os.path.join(model_result_dir, str(sample_id), f"scores_{args.n_k}.pkl")
             with open(path, "rb") as f:
                 scores = pickle.load(f)
                 scores = arkiv_proccess(scores)
@@ -51,7 +51,7 @@ def main(args):
 
     plt.tight_layout()
     
-    save_path = f"figure_visualization/attack_plot_std{args.std}_nk{args.n_k}.png"
+    save_path = f"figure_visuattack_plot_std{args.std}_nk{args.n_k}.png"
     plt.savefig(save_path, dpi=300)
     print(f"Figure saved to {save_path}")
 
