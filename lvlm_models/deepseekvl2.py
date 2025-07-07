@@ -53,13 +53,13 @@ class DeepSeekVL2:
             {"role": "<|Assistant|>", "content": answer},
         ]
         pil_images = [Image.open(f) if isinstance(f, str) else f for f in img_files]
-        prepare = self.vl_chat_proccessor(conversations=conversation, images=pil_images, force_batchify=True, system_prompt="").to(self.model.device)
+        prepare = self.vl_chat_proccessor(conversations=conversation, images=pil_images, force_batchify=True, system_prompt="").to(self.vl_gpt.device)
 
         prompt_conv = [
             {"role": "<|User|>", "content": question},
             {"role": "<|Assistant|>", "content": ""}
         ]
-        prompt_ids = self.tokenizer.apply_chat_template(prompt_conv, tokenize=True, add_generation_prompt=False, return_tensors="pt").to(self.model.device)
+        prompt_ids = self.tokenizer.apply_chat_template(prompt_conv, tokenize=True, add_generation_prompt=False, return_tensors="pt").to(self.vl_gpt.device)
         q_len = prompt_ids.shape[1]
 
         labels = prepare.input_ids.clone()
