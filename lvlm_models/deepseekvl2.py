@@ -82,7 +82,7 @@ if __name__ == "__main__":
     img_files = [Image.open(f"test_{i + 1}.jpg") for i in range(3)]
 
     
-    lvlm = DeepSeekVL2("deepseek-vl2-small")
+    lvlm = DeepSeekVL2("deepseek-vl2-tiny")
     prob_1 = lvlm.compute_log_prob(question, img_files, "The shape of the nostrils on the bill of the Russet-naped Wood-Rail (Aramides albiventris) is not clearly visible in the provided images. However, based on the scientific name and the general appearance of the bird, it is likely that the nostrils are located on the upper mandible, which is the upper part of the beak. The upper mandible of the Russet-naped Wood-Rail is typically long and slender, with a slightly curved shape. The nostrils are usually located near the tip of the upper mandible, and they are typically small and oval-shaped.")
     print(prob_1)
     prob_2 = lvlm.compute_log_prob(question, img_files, "a bird")
