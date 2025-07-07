@@ -42,7 +42,7 @@ class DeepSeekVL2:
             eos_token_id=self.tokenizer.eos_token_id,
             max_new_tokens=512,
             do_sample=False,
-            use_cache=True
+            use_cache=False
         )
 
         outputs = self.tokenizer.decode(cont[0].cpu().tolist(), skip_special_tokens=False)
@@ -69,7 +69,7 @@ class DeepSeekVL2:
                 input_ids=input_ids,
                 attention_mask=attention_mask,
                 return_dict=True,
-                use_cache=True,
+                use_cache=False,
             )
 
         logits = outputs.logits[:, :-1] 
