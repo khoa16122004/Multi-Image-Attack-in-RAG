@@ -66,7 +66,7 @@ class DeepSeekVL2:
         labels[:, :q_len] = -100
 
         with torch.no_grad():
-            out = self.model(input_ids=prepare.input_ids, attention_mask=prepare.attention_mask, labels=labels)
+            out = self.vl_gpt(input_ids=prepare.input_ids, attention_mask=prepare.attention_mask, labels=labels)
             loss = out.loss.item()
         num_tokens = (labels != -100).sum().item()
         total_log_prob = -loss * num_tokens
