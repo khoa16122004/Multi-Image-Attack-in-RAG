@@ -46,52 +46,31 @@ class DeepSeekVL2:
 
         outputs = self.tokenizer.decode(cont[0].cpu().tolist(), skip_special_tokens=False).split("<｜end▁of▁sentence｜>")
         return outputs
+    
     def compute_log_prob(self, question, img_files, answer):
         conversation = [
             {"role": "<|User|>", "content": question},
             {"role": "<|Assistant|>", "content": answer},
         ]
+        pil_images = [Image.open(f) if isinstance(f, str) else f for f in img_files]
+        prepare = self.processor(conversations=conversation, images=pil_images, force_batchify=True, system_prompt="").to(self.model.device)
 
-        prompt_only_conv = [
+        prompt_conv = [
             {"role": "<|User|>", "content": question},
-            {"role": "<|Assistant|>", "content": ""},
+            {"role": "<|Assistant|>", "content": ""}
         ]
+        prompt_ids = self.tokenizer.apply_chat_template(prompt_conv, tokenize=True, add_generation_prompt=False, return_tensors="pt").to(self.model.device)
+        q_len = prompt_ids.shape[1]
 
-        prepare_inputs = self.vl_chat_proccessor(
-            conversations=conversation,
-            images=img_files,
-            force_batchify=True,
-            system_prompt=""
-        ).to(self.vl_gpt.device)
-
-        # Tokenize lại để đo chiều dài phần prompt
-        prompt_ids = self.tokenizer.apply_chat_template(
-            prompt_only_conv,
-            tokenize=True,
-            add_generation_prompt=False,
-            return_tensors="pt"
-        ).to(self.vl_gpt.device)
-        
-        question_token_len = prompt_ids.shape[1]
-
-        # Tạo labels và mask phần câu hỏi (không tính loss)
-        labels = prepare_inputs.input_ids.clone()
-        labels[:, :question_token_len] = -100  # Mask question tokens
+        labels = prepare.input_ids.clone()
+        labels[:, :q_len] = -100
 
         with torch.no_grad():
-            outputs = self.vl_gpt(
-                input_ids=prepare_inputs.input_ids,
-                attention_mask=prepare_inputs.attention_mask,
-                labels=labels,
-                use_cache=True
-            )
-
-        loss = outputs.loss  # Trung bình trên token được tính (chỉ phần answer)
-        num_answer_tokens = (labels != -100).sum().item()
-        total_log_prob = -loss.item() * num_answer_tokens
-        prob = math.exp(total_log_prob)
-
-        return prob
+            out = self.model(input_ids=prepare.input_ids, attention_mask=prepare.attention_mask, labels=labels)
+            loss = out.loss.item()
+        num_tokens = (labels != -100).sum().item()
+        total_log_prob = -loss * num_tokens
+        return math.exp(total_log_prob)
 
     
 if __name__ == "__main__":
