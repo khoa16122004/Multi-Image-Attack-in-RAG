@@ -35,6 +35,7 @@ def main(args):
                 scores = arkiv_proccess(scores)
                 for i, gen in enumerate(scores):
                     print(i)
+                    print(gen)
                     np.min(gen[:, 0])
                 print(np.min(scores[0][:, 0]))
                 min_scores_0 = [np.min(gen[:, 0]) for gen in scores]
