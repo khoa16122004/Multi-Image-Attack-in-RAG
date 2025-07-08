@@ -20,15 +20,9 @@ class QwenVL:
                 "content": [],
             }
         ]
-        # Add images
+        # Add contents
         for img_file in img_files:
-            if isinstance(img_file, str):
-                img = Image.open(img_file).convert("RGB")
-            else:
-                img = img_file
-            messages[0]["content"].append({"type": "image", "image": img})
-
-        # Add text
+            messages[0]["content"].append({"type": "image", "image": img_file})
         messages[0]["content"].append({"type": "text", "text": qs})
 
         # Prepare inputs
