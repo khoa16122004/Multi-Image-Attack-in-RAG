@@ -50,42 +50,55 @@ class DeepSeekVL2:
     
     def compute_log_prob(self, question, img_files, answer):
         conversation = [
-            {"role": "<|User|>", "content": question},
-            {"role": "<|Assistant|>", "content": answer},
+            {
+                "role": "<|User|>",
+                "content": question,
+            },
+            {"role": "<|Assistant|>", "content": ""}
         ]
-
-        prepare = self.vl_chat_proccessor(
+        
+        prepare_inputs = self.vl_chat_proccessor(
             conversations=conversation,
             images=img_files,
             force_batchify=True,
             system_prompt=""
         ).to(self.vl_gpt.device)
-
-        input_ids = prepare.input_ids
-        attention_mask = prepare.attention_mask
-
+        
+        answer_ids = self.tokenizer.encode(answer, add_special_tokens=False, return_tensors="pt").to(self.vl_gpt.device)
+        
+        input_with_answer = torch.cat([prepare_inputs.input_ids, answer_ids], dim=1)
+        
+        labels = input_with_answer.clone()
+        labels[0, :prepare_inputs.input_ids.shape[1]] = -100
+        
+        attention_mask = torch.ones_like(input_with_answer)
+        attention_mask[0, :prepare_inputs.attention_mask.shape[1]] = prepare_inputs.attention_mask[0]
+        
+        prepare_inputs_full = type(prepare_inputs)(
+            input_ids=input_with_answer,
+            attention_mask=attention_mask,
+            images=prepare_inputs.images if hasattr(prepare_inputs, 'images') else None,
+            images_seq_mask=prepare_inputs.images_seq_mask if hasattr(prepare_inputs, 'images_seq_mask') else None,
+            images_emb_mask=prepare_inputs.images_emb_mask if hasattr(prepare_inputs, 'images_emb_mask') else None
+        )
+        
+        inputs_embeds = self.vl_gpt.prepare_inputs_embeds(**prepare_inputs_full)
+        
         with torch.no_grad():
-            outputs = self.vl_gpt(
-                input_ids=input_ids,
+            outputs = self.vl_gpt.language(
+                inputs_embeds=inputs_embeds,
                 attention_mask=attention_mask,
-                return_dict=True,
-                use_cache=False,
+                labels=labels,
+                return_dict=True
             )
-
-        logits = outputs.logits[:, :-1] 
-        labels = input_ids[:, 1:]       
-
-        log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
-        log_probs_answer = log_probs.gather(2, labels.unsqueeze(-1)).squeeze(-1)
-
-        answer_start = (input_ids[0] == self.tokenizer.convert_tokens_to_ids("<|Assistant|>")).nonzero(as_tuple=True)[0][0] + 1
-        log_probs_answer_part = log_probs_answer[0, answer_start:]
-
-        total_log_prob = log_probs_answer_part.mean().item()
-
-        return math.exp(total_log_prob)  # = p(answer | question, imgs)
-
-    
+            loss = outputs.loss
+        
+        num_answer_tokens = answer_ids.shape[1]
+        total_log_prob = -loss.item() * num_answer_tokens
+        prob = math.exp(total_log_prob)
+        
+        return prob    
+        
 
 
 def add_gaussian_noise(img, std=0.1):
