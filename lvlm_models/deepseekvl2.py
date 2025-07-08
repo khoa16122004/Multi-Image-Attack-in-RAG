@@ -74,12 +74,9 @@ class DeepSeekVL2:
         attention_mask = torch.ones_like(input_with_answer)
         attention_mask[0, :prepare_inputs.attention_mask.shape[1]] = prepare_inputs.attention_mask[0]
         
-        prepare_inputs_full = type(prepare_inputs)(
-            input_ids=input_with_answer,
-            attention_mask=attention_mask,
-            images=prepare_inputs.images,
-            images_seq_mask=prepare_inputs.images_seq_mask,
-        )
+        prepare_inputs_full = prepare_inputs
+        prepare_inputs_full.input_ids = input_with_answer
+        prepare_inputs_full.attention_mask = attention_mask
         
         inputs_embeds = self.vl_gpt.prepare_inputs_embeds(**prepare_inputs_full)
         
@@ -94,9 +91,7 @@ class DeepSeekVL2:
         
         num_answer_tokens = answer_ids.shape[1]
         total_log_prob = -loss.item() * num_answer_tokens
-        prob = math.exp(total_log_prob)
-        
-        return prob    
+        prob = math.exp(total_log_prob) 
         
 
 
