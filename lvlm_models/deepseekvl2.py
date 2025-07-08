@@ -79,7 +79,6 @@ class DeepSeekVL2:
             attention_mask=attention_mask,
             images=prepare_inputs.images if hasattr(prepare_inputs, 'images') else None,
             images_seq_mask=prepare_inputs.images_seq_mask if hasattr(prepare_inputs, 'images_seq_mask') else None,
-            images_emb_mask=prepare_inputs.images_emb_mask if hasattr(prepare_inputs, 'images_emb_mask') else None
         )
         
         inputs_embeds = self.vl_gpt.prepare_inputs_embeds(**prepare_inputs_full)
