@@ -100,7 +100,7 @@ def add_gaussian_noise(img, std=0.1):
     return transform_to_pil(noisy_img)
 
 if __name__ == "__main__":
-    question = "What is the shape of nostrils on bill of the Russet-naped Wood-Rail (scientific name: Aramides albiventris)? <image_placeholder> <image_placeholder> <image_placeholder>. Just base one the images"
+    question = "Discribe these images."
     img_files = [Image.open(f"test_{i + 1}.jpg").convert("RGB") for i in range(3)]
 
     lvlm = DeepSeekVL2("deepseek-vl2-tiny")
