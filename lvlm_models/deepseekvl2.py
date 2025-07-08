@@ -109,9 +109,9 @@ if __name__ == "__main__":
     # print(answer)
 
     # Add noise
-    std = 0.5  # Bạn có thể thử các giá trị như 0.05, 0.1, 0.2
+    std = 1  # Bạn có thể thử các giá trị như 0.05, 0.1, 0.2
     noisy_imgs = [add_gaussian_noise(img, std=std) for img in img_files]
     [noisy_img.save(f"test_{i + 1}_noisy.jpg") for i, noisy_img in enumerate(noisy_imgs)]
     adv_answer = lvlm(question, noisy_imgs)
     # print(adv_answer)
-    print(lvlm.compute_log_prob(question, noisy_imgs, "a dog"))
+    print(lvlm.compute_log_prob(question, noisy_imgs, answer[0]))
