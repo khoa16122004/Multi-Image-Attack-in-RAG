@@ -74,9 +74,18 @@ class DeepSeekVL2:
         attention_mask = torch.ones_like(input_with_answer)
         attention_mask[0, :prepare_inputs.attention_mask.shape[1]] = prepare_inputs.attention_mask[0]
         
+        # Extend images_seq_mask cho answer tokens
+        if hasattr(prepare_inputs, 'images_seq_mask'):
+            images_seq_mask = torch.zeros_like(input_with_answer, dtype=torch.bool)
+            images_seq_mask[0, :prepare_inputs.images_seq_mask.shape[1]] = prepare_inputs.images_seq_mask[0]
+        else:
+            images_seq_mask = None
+        
         prepare_inputs_full = prepare_inputs
         prepare_inputs_full.input_ids = input_with_answer
         prepare_inputs_full.attention_mask = attention_mask
+        if images_seq_mask is not None:
+            prepare_inputs_full.images_seq_mask = images_seq_mask
         
         inputs_embeds = self.vl_gpt.prepare_inputs_embeds(**prepare_inputs_full)
         
@@ -91,7 +100,9 @@ class DeepSeekVL2:
         
         num_answer_tokens = answer_ids.shape[1]
         total_log_prob = -loss.item() * num_answer_tokens
-        prob = math.exp(total_log_prob) 
+        prob = math.exp(total_log_prob)
+        
+        return prob
         
 
 
