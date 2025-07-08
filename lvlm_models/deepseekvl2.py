@@ -105,7 +105,7 @@ if __name__ == "__main__":
 
     lvlm = DeepSeekVL2("deepseek-vl2-tiny")
     answer = lvlm(question, img_files)
-    print(lvlm.compute_log_prob(question, img_files, answer[0]))
+    print(lvlm.compute_log_prob(question, img_files, "a dog"))
     print(answer)
 
     # Add noise
@@ -114,4 +114,4 @@ if __name__ == "__main__":
     [noisy_img.save(f"test_{i + 1}_noisy.jpg") for i, noisy_img in enumerate(noisy_imgs)]
     adv_answer = lvlm(question, noisy_imgs)
     print(adv_answer)
-    print(lvlm.compute_log_prob(question, noisy_imgs, answer[0]))
+    print(lvlm.compute_log_prob(question, noisy_imgs, "a cat"))
