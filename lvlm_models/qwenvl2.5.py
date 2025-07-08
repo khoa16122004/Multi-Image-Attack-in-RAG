@@ -6,7 +6,7 @@ import math
 import torchvision.transforms as T
 
 class QwenVL:
-    def __init__(self, model_name="Qwen2-VL-7B", device="cuda"):
+    def __init__(self, model_name="Qwen2.5-VL-7B-Instruct", device="cuda"):
         self.device = device
         self.model_path = f"Qwen/{model_name}"
         self.processor = AutoProcessor.from_pretrained(self.model_path, trust_remote_code=True)
@@ -55,7 +55,7 @@ class QwenVL:
         )
         return output_text
 
-    def compute_log_prob(self, question: str, imgs: List[Union[str, Image.Image]], answer: str):
+    def compute_log_prob(self, question: str, imgs, answer: str):
         messages = [{
             "role": "user",
             "content": [],
@@ -117,7 +117,7 @@ if __name__ == "__main__":
     question = "Discribe these images. <image><image><image>"
     img_files = [Image.open(f"test_{i + 1}.jpg").convert("RGB") for i in range(3)]
 
-    lvlm = QwenVL("Qwen2-VL-7B")
+    lvlm = QwenVL("Qwen2.5-VL-7B-Instruct")
     answer = lvlm(question, img_files)
     # print(lvlm.compute_log_prob(question, img_files, answer[0]))
     print(answer)
