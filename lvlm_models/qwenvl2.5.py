@@ -82,7 +82,7 @@ class QwenVL:
                 input_ids=input_with_answer,
                 attention_mask=torch.ones_like(input_with_answer).to(self.device),
                 pixel_values=input_prompt.pixel_values,
-                image_grid_thw=image_grid_thw
+                image_grid_thw=image_grid_thw,
                 labels=labels,
             )
             loss = output.loss
