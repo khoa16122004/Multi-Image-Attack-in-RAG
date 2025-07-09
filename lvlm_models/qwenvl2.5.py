@@ -50,47 +50,48 @@ class QwenVL:
         )
         return output_text
     
-    
-    def compute_log_prob(self, question, imgs, answer):
-        messages = [
-            {
-                "role": "user",
-                "content": [{"type": "text", "text": question}]
-                        + [{"type": "image", "image": img} for img in imgs]
-            }
-        ]
-        text_prompt = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        image_inputs, _ = self._process_vision_info(messages)
+    def compute_log_prob(self, question: str, imgs: List[Image.Image], answer: str) -> float:
+        messages = [{
+            "role": "user",
+            "content": [{"type": "text", "text": question}]
+                    + [{"type": "image", "image": img} for img in imgs]
+        }]
 
-        input_prompt = self.processor(
-            text=[text_prompt],
-            images=image_inputs,
-            padding=True,
+        prompt = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+
+        full_input = prompt + answer
+        tokenized = self.processor(
+            text=[full_input],
+            images=imgs,
             return_tensors="pt",
+            padding=True,
         ).to(self.device)
-        
-        image_grid_thw = self.processor.image_processor.get_image_grid_thw(image_inputs)
-        image_grid_thw = image_grid_thw.to(self.device)
-        answer_ids = self.processor.tokenizer.encode(answer, add_special_tokens=False, return_tensors="pt").to(self.device)
 
-        # Step 3: Concatenate input and answer
-        input_with_answer = torch.cat([input_prompt.input_ids, answer_ids], dim=1)
-        labels = input_with_answer.clone()
-        labels[0, :input_prompt.input_ids.shape[1]] = -100
+        input_ids = tokenized.input_ids
+        labels = input_ids.clone()
 
         with torch.no_grad():
-            output = self.model(
-                input_ids=input_with_answer,
-                attention_mask=torch.ones_like(input_with_answer).to(self.device),
-                pixel_values=input_prompt.pixel_values,
-                image_grid_thw=image_grid_thw,
-                labels=labels,
-            )
-            loss = output.loss
+            prompt_only = self.processor(
+                text=[prompt],
+                images=imgs,
+                return_tensors="pt",
+                padding=True,
+            ).to(self.device)
+            prompt_len = prompt_only.input_ids.shape[1]
 
-        num_answer_tokens = answer_ids.shape[1]
+        labels[0, :prompt_len] = -100
+
+        with torch.no_grad():
+            outputs = self.model(
+                **tokenized,
+                labels=labels
+            )
+            loss = outputs.loss
+
+        num_answer_tokens = input_ids.shape[1] - prompt_len
         total_log_prob = -loss.item() * num_answer_tokens
         prob = math.exp(total_log_prob)
+
         return prob
 
     def _process_vision_info(self, messages):
