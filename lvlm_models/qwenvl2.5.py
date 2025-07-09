@@ -28,7 +28,6 @@ class QwenVL:
         inputs = self.processor(
             text=[text],
             images=image_inputs,
-            videos=video_inputs,
             padding=True,
             return_tensors="pt",
         ).to(self.device)
