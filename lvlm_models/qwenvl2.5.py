@@ -89,8 +89,7 @@ class QwenVL:
             loss = outputs.loss
 
         num_answer_tokens = input_ids.shape[1] - prompt_len
-        total_log_prob = -loss.item() * num_answer_tokens
-        prob = math.exp(total_log_prob)
+        prob = -loss.item() * num_answer_tokens
 
         return prob
 
