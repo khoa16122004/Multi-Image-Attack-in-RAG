@@ -49,6 +49,46 @@ class QwenVL:
             generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
         )
         return output_text
+    
+    
+    def compute_log_prob(self, question, imgs, answer):
+        messages = [
+            {
+                "role": "user",
+                "content": [{"type": "text", "text": question}]
+                        + [{"type": "image", "image": img} for img in imgs]
+            }
+        ]
+        text_prompt = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        image_inputs, _ = self._process_vision_info(messages)
+
+        input_prompt = self.processor(
+            text=[text_prompt],
+            images=image_inputs,
+            padding=True,
+            return_tensors="pt",
+        ).to(self.device)
+
+        answer_ids = self.processor.tokenizer.encode(answer, add_special_tokens=False, return_tensors="pt").to(self.device)
+
+        # Step 3: Concatenate input and answer
+        input_with_answer = torch.cat([input_prompt.input_ids, answer_ids], dim=1)
+        labels = input_with_answer.clone()
+        labels[0, :input_prompt.input_ids.shape[1]] = -100
+
+        with torch.no_grad():
+            output = self.model(
+                input_ids=input_with_answer,
+                attention_mask=torch.ones_like(input_with_answer).to(self.device),
+                pixel_values=input_prompt.pixel_values,
+                labels=labels,
+            )
+            loss = output.loss
+
+        num_answer_tokens = answer_ids.shape[1]
+        total_log_prob = -loss.item() * num_answer_tokens
+        prob = math.exp(total_log_prob)
+        return prob
 
     def _process_vision_info(self, messages):
         images = []
@@ -62,16 +102,16 @@ class QwenVL:
         return images, videos
     
     
-# def add_gaussian_noise(img, std=0.1):
-#     transform_to_tensor = T.ToTensor()
-#     transform_to_pil = T.ToPILImage()
+def add_gaussian_noise(img, std=0.1):
+    transform_to_tensor = T.ToTensor()
+    transform_to_pil = T.ToPILImage()
 
-#     tensor_img = transform_to_tensor(img)
-#     noise = torch.randn(tensor_img.size()) * std
-#     noisy_img = tensor_img + noise
-#     noisy_img = torch.clamp(noisy_img, 0, 1)
+    tensor_img = transform_to_tensor(img)
+    noise = torch.randn(tensor_img.size()) * std
+    noisy_img = tensor_img + noise
+    noisy_img = torch.clamp(noisy_img, 0, 1)
 
-#     return transform_to_pil(noisy_img)
+    return transform_to_pil(noisy_img)
     
 if __name__ == "__main__":
     question = "Discribe these images. <image><image><image>"
@@ -79,13 +119,13 @@ if __name__ == "__main__":
 
     lvlm = QwenVL("Qwen2.5-VL-7B-Instruct")
     answer = lvlm(question, img_files)
-    # print(lvlm.compute_log_prob(question, img_files, answer[0]))
+    print(lvlm.compute_log_prob(question, img_files, answer[0]))
     print(answer)
 
     # Add noise
-    # std = 0.05  # Bạn có thể thử các giá trị như 0.05, 0.1, 0.2
-    # noisy_imgs = [add_gaussian_noise(img, std=std) for img in img_files]
-    # [noisy_img.save(f"test_{i + 1}_noisy.jpg") for i, noisy_img in enumerate(noisy_imgs)]
-    # adv_answer = lvlm(question, noisy_imgs)
-    # print(adv_answer)
-    # # print(lvlm.compute_log_prob(question, noisy_imgs, answer[0]))
+    std = 0.05  # Bạn có thể thử các giá trị như 0.05, 0.1, 0.2
+    noisy_imgs = [add_gaussian_noise(img, std=std) for img in img_files]
+    [noisy_img.save(f"test_{i + 1}_noisy.jpg") for i, noisy_img in enumerate(noisy_imgs)]
+    adv_answer = lvlm(question, noisy_imgs)
+    print(adv_answer)
+    print(lvlm.compute_log_prob(question, noisy_imgs, answer[0]))
