@@ -123,11 +123,13 @@ if __name__ == "__main__":
 
     lvlm = QwenVL("Qwen2.5-VL-7B-Instruct")
     answer = lvlm(question, img_files)
+    print(answer)
     p_clean = lvlm.compute_log_prob(question, img_files, answer[0])
 
     std = 0.05  
     noisy_imgs = [add_gaussian_noise(img, std=std) for img in img_files]
     [noisy_img.save(f"test_{i + 1}_noisy.jpg") for i, noisy_img in enumerate(noisy_imgs)]
     adv_answer = lvlm(question, noisy_imgs)
+    print(adv_answer)
     p_adv = lvlm.compute_log_prob(question, noisy_imgs, adv_answer[0])
     print(p_adv / p_clean)
