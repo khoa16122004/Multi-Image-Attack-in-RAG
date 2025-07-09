@@ -119,7 +119,7 @@ def add_gaussian_noise(img, std=0.1):
     
 if __name__ == "__main__":
     question = "Discribe these images. <image><image><image>"
-    img_files = [Image.open(f"test_{i + 1}.jpg").convert("RGB") for i in range(3)]
+    img_files = [Image.open(f"test_{i + 1}.jpg").convert("RGB") for i in range(1)]
 
     lvlm = QwenVL("Qwen2.5-VL-7B-Instruct")
     answer = lvlm(question, img_files)
