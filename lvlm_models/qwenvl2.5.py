@@ -69,7 +69,8 @@ class QwenVL:
             return_tensors="pt",
         ).to(self.device)
         
-        image_grid_thw = self.processor.feature_extractor.get_image_grid_thw(image_inputs).to(self.device)
+        image_grid_thw = self.processor.image_processor.get_image_grid_thw(image_inputs)
+        image_grid_thw = image_grid_thw.to(self.device)
         answer_ids = self.processor.tokenizer.encode(answer, add_special_tokens=False, return_tensors="pt").to(self.device)
 
         # Step 3: Concatenate input and answer
