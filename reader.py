@@ -45,6 +45,14 @@ class Reader(torch.nn.Module):
                 pretrained="deepseek-vl2-tiny"
             )
             self.image_token = "<image>"
+            
+        elif model_name == "qwenvl2.5":
+            from lvlm_models.qwenvl2_5 import QwenVL
+            self.instruction = "Answer the given question based only on the visual content of the images. Do not guess or use outside knowledge. Just return the answer and nothing else."
+            self.model = QwenVL(
+                pretrained="Qwen2.5-VL-7B-Instruct"
+            )
+            self.image_token = ""
 
 
             
