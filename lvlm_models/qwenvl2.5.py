@@ -131,4 +131,5 @@ if __name__ == "__main__":
     adv_answer = lvlm(question, noisy_imgs)
     print(adv_answer)
     p_adv = lvlm.compute_log_prob(question, noisy_imgs, adv_answer[0])
+    print(p_adv, p_clean)
     print(p_adv / p_clean)
