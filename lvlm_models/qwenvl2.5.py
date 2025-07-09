@@ -24,7 +24,7 @@ class QwenVL:
         ]
 
         text = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        image_inputs, video_inputs = self._process_vision_info(messages)
+        image_inputs, _ = self._process_vision_info(messages)
         inputs = self.processor(
             text=[text],
             images=image_inputs,
@@ -68,7 +68,8 @@ class QwenVL:
             padding=True,
             return_tensors="pt",
         ).to(self.device)
-
+        
+        image_grid_thw = self.processor.feature_extractor.get_image_grid_thw(image_inputs).to(self.device)
         answer_ids = self.processor.tokenizer.encode(answer, add_special_tokens=False, return_tensors="pt").to(self.device)
 
         # Step 3: Concatenate input and answer
@@ -81,6 +82,7 @@ class QwenVL:
                 input_ids=input_with_answer,
                 attention_mask=torch.ones_like(input_with_answer).to(self.device),
                 pixel_values=input_prompt.pixel_values,
+                image_grid_thw=image_grid_thw
                 labels=labels,
             )
             loss = output.loss
