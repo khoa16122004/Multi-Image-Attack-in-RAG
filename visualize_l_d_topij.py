@@ -19,8 +19,9 @@ def main(args):
         "llava-one": "LLaVA-One.",
         "llava-next": "LLaVA-Next.",
         "deepseek-vl2-tiny": "DeepSeekVL2",
-        "qwenvl2.5": "Qwen2.5VL",
-        "itern-vl": "InternVL2.5"
+        "itern-vl": "InternVL2.5",
+        "qwenvl2.5": "Qwen2.5VL"
+
     }
 
 
