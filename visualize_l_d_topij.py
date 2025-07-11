@@ -15,13 +15,14 @@ plt.rc('axes', labelsize=20)
 
 
 def main(args):
-    models = [
-        "llava-one",
-        "llava-next",
-        "deepseek-vl2-tiny",
-        "qwenvl2.5",
-        "itern-vl"
-    ]
+    models = {
+        "llava-one": "LLaVA-One.",
+        "llava-next": "LLaVA-Next.",
+        "deepseek-vl2-tiny": "DeepSeekVL2",
+        "qwenvl2.5": "Qwen2.5VL",
+        "itern-vl": "InternVL2.5"
+    }
+
 
     n_k_list = [1, 2, 3]
     colors = ['blue', 'green', 'red']
@@ -62,8 +63,8 @@ def main(args):
                 continue
 
         # Set titles and labels
-        ax[0][col].set_title(f"{model_name}", fontsize=16)
-        ax[1][col].set_title(f"{model_name}", fontsize=16)
+        ax[0][col].set_title(f"{models[model_name]}", fontsize=16)
+        ax[1][col].set_title(f"{models[model_name]}", fontsize=16)
         ax[0][col].set_xlabel("Generation Step")
         ax[1][col].set_xlabel("Generation Step")
         ax[0][col].set_ylabel("Retrieval Error score")
