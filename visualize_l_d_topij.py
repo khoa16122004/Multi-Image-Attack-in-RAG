@@ -19,7 +19,7 @@ def main(args):
         "llava-one",
         "llava-next",
         "deepseek-vl2-tiny",
-        "qwen-vl",
+        "qwenvl2.5",
         "itern-vl"
     ]
 
