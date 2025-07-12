@@ -5,7 +5,6 @@ from PIL import Image
 from transformers import AutoModel, AutoTokenizer
 import torchvision.transforms as T
 from torchvision.transforms.functional import InterpolationMode
-from lmdeploy.vl.constants import IMAGE_TOKEN
 
 
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
@@ -143,7 +142,7 @@ class InternVL:
 
 
 if __name__ == "__main__":
-    question = f"Describe these images. {IMAGE_TOKEN} {IMAGE_TOKEN} {IMAGE_TOKEN}"
+    question = f"Describe these images. <IMAGE_TOKEN> <IMAGE_TOKEN> <IMAGE_TOKEN>"
     img_files = [Image.open(f"test_{i + 1}.jpg").convert("RGB") for i in range(3)]
 
     lvlm = InternVL("InternVL2_5-8B")
