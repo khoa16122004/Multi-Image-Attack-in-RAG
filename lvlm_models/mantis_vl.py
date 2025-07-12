@@ -20,9 +20,14 @@ class Mantis:
 
     def __call__(self, prompt: str, images):
         inputs = self.processor(text=prompt, images=images, return_tensors="pt")
-        inputs = {k: v.to(self.model.device, dtype=self.model.dtype) for k, v in inputs.items()}
+        for k, v in inputs.items():
+            if k == "pixel_values":
+                inputs[k] = v.to(self.model.device, dtype=self.model.dtype)
+            else:
+                inputs[k] = v.to(self.model.device)
         output_ids = self.model.generate(**inputs, **self.kwargs)
         return self.processor.tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0]
+
 
     @torch.inference_mode()
     def compute_log_prob(self, prompt: str, images, answer: str) -> float:
