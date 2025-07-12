@@ -1,9 +1,12 @@
 import torch
 import numpy as np
+import math
 from PIL import Image
 from transformers import AutoModel, AutoTokenizer
 import torchvision.transforms as T
 from torchvision.transforms.functional import InterpolationMode
+from lmdeploy.vl.constants import IMAGE_TOKEN
+
 
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
@@ -64,6 +67,17 @@ def load_image(image, input_size=448, max_num=12):
     pixel_values = torch.stack([transform(image) for image in images])
     return pixel_values
 
+def add_gaussian_noise(img, std=0.1):
+    transform_to_tensor = T.ToTensor()
+    transform_to_pil = T.ToPILImage()
+
+    tensor_img = transform_to_tensor(img)
+    noise = torch.randn(tensor_img.size()) * std
+    noisy_img = tensor_img + noise
+    noisy_img = torch.clamp(noisy_img, 0, 1)
+
+    return transform_to_pil(noisy_img)
+
 class InternVL:
     def __init__(self, model_name="InternVL2_5-8B", input_size=448):
         model_path = f"OpenGVLab/{model_name}"
@@ -82,93 +96,73 @@ class InternVL:
 
         self.generation_config = dict(max_new_tokens=1024, do_sample=True)
 
-    def __call__(self, question, img_files):
+    def _prepare_pixel_values(self, img_files):
+        """Process images and return pixel values"""
         all_pixel_values = []
-        for path in img_files:
-            pixels = load_image(path, input_size=self.input_size)
+        for img in img_files:
+            pixels = load_image(img, input_size=self.input_size)
             all_pixel_values.append(pixels)
+        return torch.cat(all_pixel_values, dim=0).to(self.dtype).to(self.device)
 
-        pixel_values = torch.cat(all_pixel_values, dim=0).to(self.dtype).to(self.device)
+    def __call__(self, question, img_files):
+        pixel_values = self._prepare_pixel_values(img_files)
         response, _ = self.model.chat(self.tokenizer, pixel_values, question, self.generation_config, return_history=True)
         return response
     
     def compute_log_prob(self, question, img_files, answer):
-        IMG_START_TOKEN, IMG_END_TOKEN, IMG_CONTEXT_TOKEN = '<img>', '</img>', '<IMG_CONTEXT>'
-
-        pixel_values = torch.cat(
-            [load_image(p, input_size=self.input_size) for p in img_files], dim=0
-        ).to(self.dtype).to(self.device)
-
-        template = self.model.conv_template.copy()
-        if '<image>' not in question:
-            question = '<image>\n' + question
-        template.append_message(template.roles[0], question)
-        template.append_message(template.roles[1], None)
-
-        prompt = template.get_prompt()
-        img_tokens = (
-            IMG_START_TOKEN
-            + IMG_CONTEXT_TOKEN * self.model.num_image_token * pixel_values.size(0)
-            + IMG_END_TOKEN
-        )
-        prompt = prompt.replace('<image>', img_tokens, 1)
-
-        input_ids = self.tokenizer(prompt, return_tensors='pt').input_ids.to(self.device)
-        answer_ids = self.tokenizer.encode(
-            answer, add_special_tokens=False, return_tensors='pt'
-        ).to(self.device)
-
-        seq = torch.cat([input_ids, answer_ids], dim=1)
-        labels = seq.clone()
-        labels[:, : input_ids.shape[1]] = -100
-
-        attention_mask = torch.ones_like(seq, device=self.device)
-        image_flags = torch.ones(pixel_values.size(0), 1, dtype=torch.long, device=self.device)
-
-        self.model.img_context_token_id = self.tokenizer.convert_tokens_to_ids(
-            IMG_CONTEXT_TOKEN
-        )
-
+        pixel_values = self._prepare_pixel_values(img_files)
+        prompt_input_ids = self.tokenizer.encode(question, return_tensors='pt').to(self.device)
+        full_text = question + answer
+        full_input_ids = self.tokenizer.encode(full_text, return_tensors='pt').to(self.device)
+        
+        attention_mask = torch.ones_like(full_input_ids)
+        
+        labels = full_input_ids.clone()
+        prompt_len = prompt_input_ids.shape[1]
+        labels[0, :prompt_len] = -100
+        
         with torch.no_grad():
-            loss = self.model(
-                pixel_values=pixel_values,
-                input_ids=seq,
+            outputs = self.model(
+                input_ids=full_input_ids,
                 attention_mask=attention_mask,
-                image_flags=image_flags,
+                pixel_values=pixel_values,
                 labels=labels,
-            ).loss
+                return_dict=True
+            )
+            
+            logits = outputs.logits
+            shift_logits = logits[..., :-1, :].contiguous()
+            shift_labels = labels[..., 1:].contiguous()
+            
+            log_probs = torch.nn.functional.log_softmax(shift_logits, dim=-1)
+            token_log_probs = log_probs.gather(2, shift_labels.unsqueeze(-1)).squeeze(-1)
+            
+            valid_mask = (shift_labels != -100)
+            total_log_prob = token_log_probs[valid_mask].sum().item()
+            return total_log_prob
 
-        log_prob = -loss.item() * answer_ids.shape[1]
-        # return math.exp(log_prob)
-        return log_prob
-    
-    
-def add_gaussian_noise(img, std=0.1):
-    transform_to_tensor = T.ToTensor()
-    transform_to_pil = T.ToPILImage()
 
-    tensor_img = transform_to_tensor(img)
-    noise = torch.randn(tensor_img.size()) * std
-    noisy_img = tensor_img + noise
-    noisy_img = torch.clamp(noisy_img, 0, 1)
-
-    return transform_to_pil(noisy_img)
-    
 if __name__ == "__main__":
-    question = "Discribe these images. <image><image><image>"
+    question = f"Describe these images. {IMAGE_TOKEN} {IMAGE_TOKEN} {IMAGE_TOKEN}"
     img_files = [Image.open(f"test_{i + 1}.jpg").convert("RGB") for i in range(3)]
 
     lvlm = InternVL("InternVL2_5-8B")
+    
     answer = lvlm(question, img_files)
-    print(answer)
+    print("Clean answer:", answer)
+    
     p_clean = lvlm.compute_log_prob(question, img_files, answer[0])
+    print("Clean log prob:", p_clean)
 
     std = 0.05  
     noisy_imgs = [add_gaussian_noise(img, std=std) for img in img_files]
     [noisy_img.save(f"test_{i + 1}_noisy.jpg") for i, noisy_img in enumerate(noisy_imgs)]
+    
     adv_answer = lvlm(question, noisy_imgs)
-    print(adv_answer)
+    print("Noisy answer:", adv_answer)
+    
     p_adv = lvlm.compute_log_prob(question, noisy_imgs, adv_answer[0])
-    print(p_adv, p_clean)
-    print(p_adv / p_clean)
-    print(math.exp(p_adv) / math.exp(p_clean))
+    print("Noisy log prob:", p_adv)
+    
+    print(f"Log prob ratio: {p_adv / p_clean if p_clean != 0 else 'inf'}")
+    
