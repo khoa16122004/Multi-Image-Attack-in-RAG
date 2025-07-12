@@ -8,12 +8,13 @@ from PIL import Image
 
 class Mantis:
     def __init__(self, pretrained):
-        self.processor = MLlavaProcessor.from_pretrained(f"TIGER-Lab/{pretrained}")
+        self.processor = MLlavaProcessor.from_pretrained(f"TIGER-Lab/{pretrained}", trust_remote_code=True)
         self.model = LlavaForConditionalGeneration.from_pretrained(
             f"TIGER-Lab/{pretrained}",
             device_map=f"cuda:{torch.cuda.current_device()}",
             torch_dtype=torch.bfloat16,
             attn_implementation="flash_attention_2",
+            trust_remote_code=True
         )
         self.generation_kwargs = {
             "max_new_tokens": 512,
