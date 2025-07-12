@@ -178,7 +178,7 @@ def add_gaussian_noise(img, std=0.1):
     return transform_to_pil(noisy_img)
     
 if __name__ == "__main__":
-    question = "Discribe these images. <image><image><image>"
+    question = "Discribe these images. <IMAGE_TOKEN><IMAGE_TOKEN><IMAGE_TOKEN>"
     img_files = [Image.open(f"test_{i + 1}.jpg").convert("RGB") for i in range(3)]
 
     lvlm = InternVL("InternVL2_5-8B")
