@@ -6,32 +6,40 @@ from PIL import Image
 
 class Mantis:
     def __init__(self, pretrained):
-        self.processor = MLlavaProcessor.from_pretrained(f"TIGER-Lab/{pretrained}", trust_remote_code=True)
+        self.processor = MLlavaProcessor.from_pretrained(
+            f"TIGER-Lab/{pretrained}", trust_remote_code=True
+        )
+
+        # ✨ Toàn bộ model ở FP16
         self.model = LlavaForConditionalGeneration.from_pretrained(
             f"TIGER-Lab/{pretrained}",
             device_map=f"cuda:{torch.cuda.current_device()}",
-            torch_dtype=torch.bfloat16,
+            torch_dtype=torch.float16,            # <-- FP16 (Half)
             attn_implementation="flash_attention_2",
-            trust_remote_code=True
+            trust_remote_code=True,
         )
+
+        # ⚠️ Đồng bộ vision‑tower
+        self.model.vision_tower.to(dtype=self.model.dtype, device=self.model.device)
+
         self.generation_kwargs = {
             "max_new_tokens": 512,
             "num_beams": 1,
             "do_sample": False,
         }
+
     def __call__(self, qs, img_files):
         inputs = self.processor(images=img_files, text=qs, return_tensors="pt")
         inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
-
         inputs["pixel_values"] = inputs["pixel_values"].to(self.model.dtype)
 
         with torch.inference_mode():
             out_ids = self.model.generate(**inputs, **self.generation_kwargs)
 
-        txt = self.processor.tokenizer.batch_decode(
-            out_ids, skip_special_tokens=True
-        )[0].strip()
-        return txt
+        return self.processor.tokenizer.decode(
+            out_ids[0], skip_special_tokens=True
+        ).strip()
+
 
     @torch.inference_mode()
     def compute_log_prob(self, qs, img_files, ans):
