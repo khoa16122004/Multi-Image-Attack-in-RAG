@@ -1,6 +1,6 @@
-from mantis_vl.models.mllava import MLlavaProcessor, LlavaForConditionalGeneration
-from mantis_vl.models.mllava import chat_mllava
-from mantis_vl.models.mllava import MLlavaProcessor, LlavaForConditionalGeneration
+from mantis.models.mllava import MLlavaProcessor, LlavaForConditionalGeneration
+from mantis.models.mllava import chat_mllava
+from mantis.models.mllava import MLlavaProcessor, LlavaForConditionalGeneration
 import torchvision.transforms as T
 
 import torch
