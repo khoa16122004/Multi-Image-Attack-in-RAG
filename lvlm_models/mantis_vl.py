@@ -10,7 +10,7 @@ class Mantis:
         self.model = LlavaForConditionalGeneration.from_pretrained(
             f"TIGER-Lab/{pretrained}",
             device_map=f"cuda:{torch.cuda.current_device()}",
-            torch_dtype=torch.bfloat16,
+            # torch_dtype=torch.bfloat16,
             attn_implementation="flash_attention_2",
             trust_remote_code=True
         )
