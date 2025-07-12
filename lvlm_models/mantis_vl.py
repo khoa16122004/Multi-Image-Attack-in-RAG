@@ -1,8 +1,6 @@
 from mantis.models.mllava import MLlavaProcessor, LlavaForConditionalGeneration
 from mantis.models.mllava import chat_mllava
-from mantis.models.mllava import MLlavaProcessor, LlavaForConditionalGeneration
 import torchvision.transforms as T
-
 import torch
 from PIL import Image
 
@@ -39,11 +37,12 @@ class Mantis:
         labels = input_ids.clone()
         labels[:, :-len(ans_ids)] = -100
 
-        img_inputs = self.processor(images=img_files, return_tensors="pt").to(self.model.device, dtype=self.model.dtype)
+        img_inputs = self.processor(images=img_files, return_tensors="pt")
+        pixel_values = img_inputs.pixel_values.to(self.model.device, dtype=self.model.dtype)
 
         outputs = self.model(
             input_ids=input_ids,
-            pixel_values=img_inputs.pixel_values,
+            pixel_values=pixel_values,
             labels=labels,
         )
         nll = outputs.loss * len(ans_ids)
@@ -62,19 +61,25 @@ def add_gaussian_noise(img, std=0.1):
     return transform_to_pil(noisy_img)
     
 if __name__ == "__main__":
-    question = "Discribe these images. <image><image><image>"
+    question = "Describe these images. <image><image><image>"  # Fixed typo
     img_files = [Image.open(f"test_{i + 1}.jpg").convert("RGB") for i in range(3)]
 
     lvlm = Mantis("Mantis-llava-7b")
     answer = lvlm(question, img_files)
     print(answer)
-    p_clean = lvlm.compute_log_prob(question, img_files, answer[0])
+    
+    answer_text = answer if isinstance(answer, str) else answer[0]
+    p_clean = lvlm.compute_log_prob(question, img_files, answer_text)
 
     std = 0.05  
     noisy_imgs = [add_gaussian_noise(img, std=std) for img in img_files]
     [noisy_img.save(f"test_{i + 1}_noisy.jpg") for i, noisy_img in enumerate(noisy_imgs)]
     adv_answer = lvlm(question, noisy_imgs)
     print(adv_answer)
-    p_adv = lvlm.compute_log_prob(question, noisy_imgs, adv_answer[0])
-    print(p_adv, p_clean)
-    print(p_adv / p_clean)
+    
+    adv_answer_text = adv_answer if isinstance(adv_answer, str) else adv_answer[0]
+    p_adv = lvlm.compute_log_prob(question, noisy_imgs, adv_answer_text)
+    
+    print(f"Clean probability: {p_clean}")
+    print(f"Adversarial probability: {p_adv}")
+    print(f"Ratio (adv/clean): {p_adv / p_clean}")
