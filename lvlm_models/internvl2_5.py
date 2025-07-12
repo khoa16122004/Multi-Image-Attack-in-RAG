@@ -93,7 +93,69 @@ class InternVL:
         return response
     
     def compute_log_prob(self, question, img_files, answer):
-  
+        """
+        Tính log probability của answer given image và question
+        
+        Args:
+            question: Câu hỏi dạng string
+            img_files: List các PIL Image objects
+            answer: Câu trả lời cần tính probability
+        
+        Returns:
+            log_prob: Log probability của answer
+        """
+        import torch.nn.functional as F
+        
+        # Preprocess images giống như trong __call__
+        all_pixel_values = []
+        for img in img_files:
+            pixels = load_image(img, input_size=self.input_size)
+            all_pixel_values.append(pixels)
+        
+        pixel_values = torch.cat(all_pixel_values, dim=0).to(self.dtype).to(self.device)
+        
+        # Tokenize question và answer
+        # Tạo prompt giống như model.chat sử dụng
+        messages = [{'role': 'user', 'content': question}]
+        prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        
+        # Tokenize input và target
+        input_ids = self.tokenizer(prompt, return_tensors='pt').input_ids.to(self.device)
+        target_ids = self.tokenizer(answer, return_tensors='pt').input_ids.to(self.device)
+        
+        # Tạo full sequence: input + target
+        full_input_ids = torch.cat([input_ids, target_ids], dim=1)
+        
+        # Forward pass
+        with torch.no_grad():
+            outputs = self.model(
+                input_ids=full_input_ids,
+                pixel_values=pixel_values,
+                return_dict=True
+            )
+            
+            logits = outputs.logits
+            
+            # Tính log probability cho phần answer
+            # Shift logits và labels để align
+            shift_logits = logits[..., :-1, :].contiguous()
+            shift_labels = full_input_ids[..., 1:].contiguous()
+            
+            # Chỉ tính loss cho phần answer (bỏ qua phần prompt)
+            answer_start_idx = input_ids.size(1) - 1  # -1 vì đã shift
+            answer_logits = shift_logits[:, answer_start_idx:, :]
+            answer_labels = shift_labels[:, answer_start_idx:]
+            
+            # Tính log probabilities
+            log_probs = F.log_softmax(answer_logits, dim=-1)
+            
+            # Lấy log prob của các token trong answer
+            token_log_probs = log_probs.gather(2, answer_labels.unsqueeze(-1)).squeeze(-1)
+            
+            # Tổng log probability của toàn bộ answer
+            total_log_prob = token_log_probs.sum().item()
+            
+        return total_log_prob  
     
     
 def add_gaussian_noise(img, std=0.1):
@@ -114,7 +176,7 @@ if __name__ == "__main__":
     lvlm = InternVL("InternVL2_5-8B")
     answer = lvlm(question, img_files)
     print(answer)
-    # p_clean = lvlm.compute_log_prob(question, img_files, answer[0])
+    p_clean = lvlm.compute_log_prob(question, img_files, answer[0])
 
     std = 0.05  
     noisy_imgs = [add_gaussian_noise(img, std=std) for img in img_files]
