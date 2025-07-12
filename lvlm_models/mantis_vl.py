@@ -10,7 +10,7 @@ class Mantis:
         self.model = LlavaForConditionalGeneration.from_pretrained(
             f"TIGER-Lab/{pretrained}",
             device_map=f"cuda:{torch.cuda.current_device()}",
-            # torch_dtype=torch.bfloat16,
+            torch_dtype=torch.bfloat16,
             attn_implementation="flash_attention_2",
             trust_remote_code=True
         )
@@ -19,10 +19,19 @@ class Mantis:
             "num_beams": 1,
             "do_sample": False,
         }
+    def __call__(self, qs, img_files):
+        inputs = self.processor(images=img_files, text=qs, return_tensors="pt")
+        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
 
-    def __call__(self, qs, img_files):  # list PIL.Image
-        response, _ = chat_mllava(qs, img_files, self.model, self.processor, **self.generation_kwargs)
-        return response
+        inputs["pixel_values"] = inputs["pixel_values"].to(self.model.dtype)
+
+        with torch.inference_mode():
+            out_ids = self.model.generate(**inputs, **self.generation_kwargs)
+
+        txt = self.processor.tokenizer.batch_decode(
+            out_ids, skip_special_tokens=True
+        )[0].strip()
+        return txt
 
     @torch.inference_mode()
     def compute_log_prob(self, qs, img_files, ans):
