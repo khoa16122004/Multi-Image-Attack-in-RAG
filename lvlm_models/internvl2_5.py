@@ -92,6 +92,56 @@ class InternVL:
         response, _ = self.model.chat(self.tokenizer, pixel_values, question, self.generation_config, return_history=True)
         return response
     
+    def compute_log_prob(self, question, img_files, answer):
+        IMG_START_TOKEN, IMG_END_TOKEN, IMG_CONTEXT_TOKEN = '<img>', '</img>', '<IMG_CONTEXT>'
+
+        pixel_values = torch.cat(
+            [load_image(p, input_size=self.input_size) for p in img_files], dim=0
+        ).to(self.dtype).to(self.device)
+
+        template = self.model.conv_template.copy()
+        if '<image>' not in question:
+            question = '<image>\n' + question
+        template.append_message(template.roles[0], question)
+        template.append_message(template.roles[1], None)
+
+        prompt = template.get_prompt()
+        img_tokens = (
+            IMG_START_TOKEN
+            + IMG_CONTEXT_TOKEN * self.model.num_image_token * pixel_values.size(0)
+            + IMG_END_TOKEN
+        )
+        prompt = prompt.replace('<image>', img_tokens, 1)
+
+        input_ids = self.tokenizer(prompt, return_tensors='pt').input_ids.to(self.device)
+        answer_ids = self.tokenizer.encode(
+            answer, add_special_tokens=False, return_tensors='pt'
+        ).to(self.device)
+
+        seq = torch.cat([input_ids, answer_ids], dim=1)
+        labels = seq.clone()
+        labels[:, : input_ids.shape[1]] = -100
+
+        attention_mask = torch.ones_like(seq, device=self.device)
+        image_flags = torch.ones(pixel_values.size(0), 1, dtype=torch.long, device=self.device)
+
+        self.model.img_context_token_id = self.tokenizer.convert_tokens_to_ids(
+            IMG_CONTEXT_TOKEN
+        )
+
+        with torch.no_grad():
+            loss = self.model(
+                pixel_values=pixel_values,
+                input_ids=seq,
+                attention_mask=attention_mask,
+                image_flags=image_flags,
+                labels=labels,
+            ).loss
+
+        log_prob = -loss.item() * answer_ids.shape[1]
+        # return math.exp(log_prob)
+        return log_prob
+    
     
 def add_gaussian_noise(img, std=0.1):
     transform_to_tensor = T.ToTensor()
@@ -111,14 +161,14 @@ if __name__ == "__main__":
     lvlm = InternVL("InternVL2_5-8B")
     answer = lvlm(question, img_files)
     print(answer)
-    # p_clean = lvlm.compute_log_prob(question, img_files, answer[0])
+    p_clean = lvlm.compute_log_prob(question, img_files, answer[0])
 
     std = 0.05  
     noisy_imgs = [add_gaussian_noise(img, std=std) for img in img_files]
     [noisy_img.save(f"test_{i + 1}_noisy.jpg") for i, noisy_img in enumerate(noisy_imgs)]
     adv_answer = lvlm(question, noisy_imgs)
     print(adv_answer)
-    # p_adv = lvlm.compute_log_prob(question, noisy_imgs, adv_answer[0])
-    # print(p_adv, p_clean)
-    # print(p_adv / p_clean)
-    # print(math.exp(p_adv) / math.exp(p_clean))
+    p_adv = lvlm.compute_log_prob(question, noisy_imgs, adv_answer[0])
+    print(p_adv, p_clean)
+    print(p_adv / p_clean)
+    print(math.exp(p_adv) / math.exp(p_clean))
