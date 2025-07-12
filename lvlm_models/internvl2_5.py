@@ -89,24 +89,16 @@ class InternVL:
             all_pixel_values.append(pixels)
 
         pixel_values = torch.cat(all_pixel_values, dim=0).to(self.dtype).to(self.device)
-        response, _ = self.model.chat(self.tokenizer, pixel_values, question, self.generation_config, return_history=True)
+        response, _ = self.model.chat(self.tokenizer, 
+                                      pixel_values, 
+                                      question, 
+                                      self.generation_config, 
+                                      return_history=True
+                                      )
         return response
     
     def compute_log_prob(self, question, img_files, answer):
-        """
-        Tính log probability của answer given image và question
         
-        Args:
-            question: Câu hỏi dạng string
-            img_files: List các PIL Image objects
-            answer: Câu trả lời cần tính probability
-        
-        Returns:
-            log_prob: Log probability của answer
-        """
-        import torch.nn.functional as F
-        
-        # Preprocess images giống như trong __call__
         all_pixel_values = []
         for img in img_files:
             pixels = load_image(img, input_size=self.input_size)
@@ -114,49 +106,65 @@ class InternVL:
         
         pixel_values = torch.cat(all_pixel_values, dim=0).to(self.dtype).to(self.device)
         
-        # Tokenize question và answer
-        # Tạo prompt giống như model.chat sử dụng
-        messages = [{'role': 'user', 'content': question}]
-        prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        answer_tokens = self.tokenizer(answer, return_tensors='pt', add_special_tokens=False).input_ids.to(self.device)
+        answer_token_list = answer_tokens[0].tolist()
         
-        # Tokenize input và target
-        input_ids = self.tokenizer(prompt, return_tensors='pt').input_ids.to(self.device)
-        target_ids = self.tokenizer(answer, return_tensors='pt').input_ids.to(self.device)
-        
-        # Tạo full sequence: input + target
-        full_input_ids = torch.cat([input_ids, target_ids], dim=1)
-        
-        # Forward pass
         with torch.no_grad():
-            outputs = self.model(
-                input_ids=full_input_ids,
-                pixel_values=pixel_values,
-                return_dict=True
+            messages = [{'role': 'user', 'content': question}]
+            
+            temp_response, history = self.model.chat(
+                self.tokenizer, 
+                pixel_values, 
+                question, 
+                dict(max_new_tokens=1, do_sample=False),
+                return_history=True
             )
             
-            logits = outputs.logits
+            conversation_text = ""
+            for turn in history:
+                if turn['role'] == 'user':
+                    conversation_text += f"User: {turn['content']}\n"
+                elif turn['role'] == 'assistant':
+                    conversation_text += f"Assistant: "
+                    break
             
-            # Tính log probability cho phần answer
-            # Shift logits và labels để align
-            shift_logits = logits[..., :-1, :].contiguous()
-            shift_labels = full_input_ids[..., 1:].contiguous()
+            input_ids = self.tokenizer(conversation_text, return_tensors='pt').input_ids.to(self.device)
             
-            # Chỉ tính loss cho phần answer (bỏ qua phần prompt)
-            answer_start_idx = input_ids.size(1) - 1  # -1 vì đã shift
-            answer_logits = shift_logits[:, answer_start_idx:, :]
-            answer_labels = shift_labels[:, answer_start_idx:]
+            generation_config = dict(
+                max_new_tokens=len(answer_token_list),
+                min_new_tokens=len(answer_token_list),
+                do_sample=False,
+                return_dict_in_generate=True,
+                output_scores=True,
+                pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id
+            )
             
-            # Tính log probabilities
-            log_probs = F.log_softmax(answer_logits, dim=-1)
+            outputs = self.model.generate(
+                input_ids=input_ids,
+                pixel_values=pixel_values,
+                **generation_config
+            )
             
-            # Lấy log prob của các token trong answer
-            token_log_probs = log_probs.gather(2, answer_labels.unsqueeze(-1)).squeeze(-1)
+            scores = outputs.scores  # List of tensors, mỗi tensor là logits cho 1 generation step
+            total_log_prob = 0.0
             
-            # Tổng log probability của toàn bộ answer
-            total_log_prob = token_log_probs.sum().item()
+            print(f"Number of scores: {len(scores)}")
+            print(f"Number of target tokens: {len(answer_token_list)}")
             
-        return total_log_prob  
-    
+            for i, score in enumerate(scores):
+                if i < len(answer_token_list):
+                    log_probs = F.log_softmax(score, dim=-1)
+                    target_token = answer_token_list[i]
+                    token_log_prob = log_probs[0, target_token].item()
+                    total_log_prob += token_log_prob
+                    
+                    predicted_token = torch.argmax(score, dim=-1)[0].item()
+                    print(f"Step {i}: target={target_token}, predicted={predicted_token}, log_prob={token_log_prob:.4f}")
+            
+            
+        
+        return total_log_prob
+        
     
 def add_gaussian_noise(img, std=0.1):
     transform_to_tensor = T.ToTensor()
