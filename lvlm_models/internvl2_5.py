@@ -183,7 +183,7 @@ if __name__ == "__main__":
     [noisy_img.save(f"test_{i + 1}_noisy.jpg") for i, noisy_img in enumerate(noisy_imgs)]
     adv_answer = lvlm(question, noisy_imgs)
     print(adv_answer)
-    # p_adv = lvlm.compute_log_prob(question, noisy_imgs, adv_answer[0])
-    # print(p_adv, p_clean)
-    # print(p_adv / p_clean)
+    p_adv = lvlm.compute_log_prob(question, noisy_imgs, adv_answer[0])
+    print(p_adv, p_clean)
+    print(p_adv / p_clean)
     # print(math.exp(p_adv) / math.exp(p_clean))
