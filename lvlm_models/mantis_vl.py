@@ -13,21 +13,16 @@ class Mantis:
         self.model = LlavaForConditionalGeneration.from_pretrained(
             f"TIGER-Lab/{pretrained}",
             device_map=f"cuda:{torch.cuda.current_device()}",
-            torch_dtype=torch.bfloat16,
+            torch_dtype=torch.float16,
             attn_implementation="flash_attention_2",
         )
         self.kwargs = dict(max_new_tokens=512, num_beams=1, do_sample=False)
 
     def __call__(self, prompt: str, images):
         inputs = self.processor(text=prompt, images=images, return_tensors="pt")
-        for k, v in inputs.items():
-            if k == "pixel_values":
-                inputs[k] = v.to(self.model.device, dtype=self.model.dtype)
-            else:
-                inputs[k] = v.to(self.model.device)
+        inputs = {k: v.to(self.model.device, dtype=self.model.dtype) for k, v in inputs.items()}
         output_ids = self.model.generate(**inputs, **self.kwargs)
         return self.processor.tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0]
-
 
     @torch.inference_mode()
     def compute_log_prob(self, prompt: str, images, answer: str) -> float:
