@@ -19,7 +19,17 @@ class Mantis:
         self.kwargs = dict(max_new_tokens=512, num_beams=1, do_sample=False)
 
     def __call__(self, prompt: str, images):
-        return chat_mllava(prompt, images, self.model, self.processor, **self.kwargs)[0]
+        # Ép dtype tay nếu processor không xử lý đúng dtype
+        img_inputs = self.processor(images=images, return_tensors="pt")
+        img_inputs = {k: v.to(self.model.device, dtype=self.model.dtype) for k, v in img_inputs.items()}
+
+        inputs = self.processor.tokenizer(prompt, return_tensors="pt").to(self.model.device)
+        output_ids = self.model.generate(
+            **inputs,
+            pixel_values=img_inputs["pixel_values"],
+            **self.kwargs
+        )
+        return self.processor.tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0]
 
     @torch.inference_mode()
     def compute_log_prob(self, prompt: str, images, answer: str) -> float:
@@ -29,15 +39,14 @@ class Mantis:
         ans_ids = tok(answer, add_special_tokens=False).input_ids
         labels = ids.clone()
         labels[:, :-len(ans_ids)] = -100
-        img_inputs = self.processor(images=images, return_tensors="pt").to(self.model.device, dtype=self.model.dtype)
-        loss = self.model(input_ids=ids, pixel_values=img_inputs.pixel_values, labels=labels).loss
+
+        img_inputs = self.processor(images=images, return_tensors="pt")
+        img_inputs = {k: v.to(self.model.device, dtype=self.model.dtype) for k, v in img_inputs.items()}
+
+        loss = self.model(input_ids=ids, pixel_values=img_inputs["pixel_values"], labels=labels).loss
         return torch.exp(-loss * len(ans_ids)).item()
-
-def add_gaussian_noise(img: Image.Image, std: float = 0.05) -> Image.Image:
-    to_tensor, to_pil = T.ToTensor(), T.ToPILImage()
-    noisy = torch.clamp(to_tensor(img) + torch.randn_like(to_tensor(img)) * std, 0, 1)
-    return to_pil(noisy)
-
+    
+    
 if __name__ == "__main__":
     q = "Describe these images. <image><image><image>"
     imgs = [Image.open(f"test_{i+1}.jpg").convert("RGB") for i in range(3)]
