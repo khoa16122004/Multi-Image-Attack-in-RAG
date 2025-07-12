@@ -1,11 +1,9 @@
 import torch
 import numpy as np
-import math
 from PIL import Image
 from transformers import AutoModel, AutoTokenizer
 import torchvision.transforms as T
 from torchvision.transforms.functional import InterpolationMode
-
 
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
@@ -66,17 +64,6 @@ def load_image(image, input_size=448, max_num=12):
     pixel_values = torch.stack([transform(image) for image in images])
     return pixel_values
 
-def add_gaussian_noise(img, std=0.1):
-    transform_to_tensor = T.ToTensor()
-    transform_to_pil = T.ToPILImage()
-
-    tensor_img = transform_to_tensor(img)
-    noise = torch.randn(tensor_img.size()) * std
-    noisy_img = tensor_img + noise
-    noisy_img = torch.clamp(noisy_img, 0, 1)
-
-    return transform_to_pil(noisy_img)
-
 class InternVL:
     def __init__(self, model_name="InternVL2_5-8B", input_size=448):
         model_path = f"OpenGVLab/{model_name}"
@@ -95,73 +82,46 @@ class InternVL:
 
         self.generation_config = dict(max_new_tokens=1024, do_sample=True)
 
-    def _prepare_pixel_values(self, img_files):
-        """Process images and return pixel values"""
-        all_pixel_values = []
-        for img in img_files:
-            pixels = load_image(img, input_size=self.input_size)
-            all_pixel_values.append(pixels)
-        return torch.cat(all_pixel_values, dim=0).to(self.dtype).to(self.device)
-
     def __call__(self, question, img_files):
-        pixel_values = self._prepare_pixel_values(img_files)
+        all_pixel_values = []
+        for path in img_files:
+            pixels = load_image(path, input_size=self.input_size)
+            all_pixel_values.append(pixels)
+
+        pixel_values = torch.cat(all_pixel_values, dim=0).to(self.dtype).to(self.device)
         response, _ = self.model.chat(self.tokenizer, pixel_values, question, self.generation_config, return_history=True)
         return response
     
     def compute_log_prob(self, question, img_files, answer):
-        pixel_values = self._prepare_pixel_values(img_files)
-        prompt_input_ids = self.tokenizer.encode(question, return_tensors='pt').to(self.device)
-        full_text = question + answer
-        full_input_ids = self.tokenizer.encode(full_text, return_tensors='pt').to(self.device)
-        
-        attention_mask = torch.ones_like(full_input_ids)
-        
-        labels = full_input_ids.clone()
-        prompt_len = prompt_input_ids.shape[1]
-        labels[0, :prompt_len] = -100
-        
-        with torch.no_grad():
-            outputs = self.model(
-                input_ids=full_input_ids,
-                attention_mask=attention_mask,
-                pixel_values=pixel_values,
-                labels=labels,
-                return_dict=True
-            )
-            
-            logits = outputs.logits
-            shift_logits = logits[..., :-1, :].contiguous()
-            shift_labels = labels[..., 1:].contiguous()
-            
-            log_probs = torch.nn.functional.log_softmax(shift_logits, dim=-1)
-            token_log_probs = log_probs.gather(2, shift_labels.unsqueeze(-1)).squeeze(-1)
-            
-            valid_mask = (shift_labels != -100)
-            total_log_prob = token_log_probs[valid_mask].sum().item()
-            return total_log_prob
+  
+    
+    
+def add_gaussian_noise(img, std=0.1):
+    transform_to_tensor = T.ToTensor()
+    transform_to_pil = T.ToPILImage()
 
+    tensor_img = transform_to_tensor(img)
+    noise = torch.randn(tensor_img.size()) * std
+    noisy_img = tensor_img + noise
+    noisy_img = torch.clamp(noisy_img, 0, 1)
 
+    return transform_to_pil(noisy_img)
+    
 if __name__ == "__main__":
-    question = f"Describe these images. <IMAGE_TOKEN> <IMAGE_TOKEN> <IMAGE_TOKEN>"
+    question = "Discribe these images. <image><image><image>"
     img_files = [Image.open(f"test_{i + 1}.jpg").convert("RGB") for i in range(3)]
 
     lvlm = InternVL("InternVL2_5-8B")
-    
     answer = lvlm(question, img_files)
-    print("Clean answer:", answer)
-    
-    p_clean = lvlm.compute_log_prob(question, img_files, answer[0])
-    print("Clean log prob:", p_clean)
+    print(answer)
+    # p_clean = lvlm.compute_log_prob(question, img_files, answer[0])
 
     std = 0.05  
     noisy_imgs = [add_gaussian_noise(img, std=std) for img in img_files]
     [noisy_img.save(f"test_{i + 1}_noisy.jpg") for i, noisy_img in enumerate(noisy_imgs)]
-    
     adv_answer = lvlm(question, noisy_imgs)
-    print("Noisy answer:", adv_answer)
-    
-    p_adv = lvlm.compute_log_prob(question, noisy_imgs, adv_answer[0])
-    print("Noisy log prob:", p_adv)
-    
-    print(f"Log prob ratio: {p_adv / p_clean if p_clean != 0 else 'inf'}")
-    
+    print(adv_answer)
+    # p_adv = lvlm.compute_log_prob(question, noisy_imgs, adv_answer[0])
+    # print(p_adv, p_clean)
+    # print(p_adv / p_clean)
+    # print(math.exp(p_adv) / math.exp(p_clean))
