@@ -397,7 +397,7 @@ class EvaluatorEachScore:
         return data
     
     def evaluation(self, sample_id):
-        output_dir = os.path.join(self.output_dir, str(sample_id), "inject_{self.n_k}")
+        output_dir = os.path.join(self.output_dir, str(sample_id), f"inject_{self.n_k}")
         os.makedirs(output_dir, exist_ok=True)
         
         for topk in range(1, self.n_k + 1):
