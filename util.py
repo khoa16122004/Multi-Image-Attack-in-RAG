@@ -327,6 +327,86 @@ class Evaluator:
         }
 
         with open(output_path, "w") as f:
-            json.dump(data, f, indent=4)                
+            json.dump(data, f, indent=4)
+            
+class EvaluatorEachScore:
+    def __init__(self, args):
+        self.reader = Reader(args.reader_name)
+        self.retriever = Retriever(args.retriever_name)
+        self.retriever_name = args.retriever_name
+        self.reader_name = args.reader_name
+        self.std = args.std
+        self.n_k = args.n_k
+        self.attack_result_path = args.attack_result_path
+        self.loader = DataLoader(retri_dir=args.result_clean_dir)
+        self.init_llm(args.llm)
+        self.method = args.method
+        self.target_answer = args.target_answer
+        self.output_dir = f"each_topk_scores_target_answer={self.target_answer}_usingquestion={args.using_question}_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
+        os.makedirs(self.output_dir, exist_ok=True)
+    
+
+    def init_llm(self, model_name):
+        if model_name == "llama":
+            self.llm = LlamaService("Llama-13b")
+        elif model_name == "gpt":
+            self.llm = GPTService("gpt-4o")
+
+
+    def cal_recall_end_to_end(self, sample_id, top_k):                
+        question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
+        golden_answer = self.reader.image_to_text(question, retri_imgs[:top_k])[0]
+
+
+        # take the adv images n_k
+        imgs_path = os.path.join(self.attack_result_path, str(sample_id))
+        adv_imgs = []    
+        for i in range(self.n_k):
+            adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
+            adv_imgs.append(adv_img)
+        adv_sims = self.retriever(query, adv_imgs).cpu().tolist()
+        adv_sims = [item[0] for item in adv_sims]
+        all_imgs = retri_imgs + adv_imgs
+        all_sims = sims + adv_sims
+        sorted_indices = sorted(range(len(all_sims)), key=lambda i: all_sims[i], reverse=True)
+        sorted_imgs = [all_imgs[i] for i in sorted_indices]
+
+        recall_topk = 0
+        for i in sorted_indices[:self.n_k]:
+            if i < self.n_k:
+                recall_topk += 1
+        recall_topk = recall_topk / self.n_k
+                
+        # end-to-end recall
+        pred_ans = self.reader.image_to_text(question, sorted_imgs[:self.top_k])[0]
+        system_prompt, user_prompt = get_prompt_compare_answer(gt_answer=golden_answer, model_answer=pred_ans, question=question)
+        score_response = self.llm.text_to_text(system_prompt=system_prompt, prompt=user_prompt).strip()
+        end_to_end_score = parse_score(score_response)        
+
+        data = {
+            "question": question,
+            "pred_answer": pred_ans,
+            "original_answer": golden_answer,
+            "resposne_score": score_response,
+            "parse_score": end_to_end_score
+            
+        }
+
+
+
+        return data
+    
+    def evaluation(self, sample_id):
+        output_dir = os.path.join(self.output_dir, str(sample_id), "inject_{self.n_k}")
+        os.makedirs(output_dir, exist_ok=True)
+        
+        for topk in range(1, self.n_k + 1):
+            data = self.cal_recall_end_to_end(sample_id, topk)
+            # ghi vào answers_{topk}.json
+            output_path = os.path.join(output_dir, f"answers_{topk}.json")
+            with open(output_path, "w") as f:
+                json.dump(data, f, indent=4)
+            
+         
     
 
