@@ -1,43 +1,24 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
-# Define k values
-k_values = [1, 2, 3]
+# Dữ liệu
+topks = [1, 2, 3, 4, 5]
+scores_1 = [0.555, 0.69, 0.7, 0.72, 0.785]
+scores_2 = [0.6, 0.63, 0.69, 0.6983, 0.705]
+scores_3 = [0.55, 0.635, 0.655, 0.62, 0.655]
 
-# Data for epsilon = 0.05
-L_05 = [0.9864, 0.9952, 1.0027]
-D_05 = [0.5315, 0.4958, 0.4484]
-ASR_05 = [0.83, 0.73, 0.61]
-Recall_05 = [0.16, 0.2, 0.2]
-E2E_05 = [0.51, 0.565, 0.585]
+# Vẽ biểu đồ
+plt.figure(figsize=(8, 5))
+plt.plot(topks, scores_1, marker='o', label='Inject top-1 document')
+plt.plot(topks, scores_2, marker='o', label='Inject top-2 documents')
+plt.plot(topks, scores_3, marker='o', label='Inject top-3 documents')
 
-# Data for epsilon = 0.08
-L_08 = [0.9885, 0.9935, 1.0037]
-D_08 = [0.5095, 0.4987, 0.5418]
-ASR_08 = [0.83, 0.67, 0.53]
-Recall_08 = [0.12, 0.215, 0.2067]
-E2E_08 = [0.575, 0.635, 0.585]
+# Cấu hình biểu đồ
+plt.xlabel("Top-k")
+plt.ylabel("End-to-End Accuracy")
+plt.title("So sánh End-to-End Accuracy theo số lượng document được inject")
+plt.xticks(topks)
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
 
-# Plotting
-fig, axs = plt.subplots(3, 2, figsize=(12, 10))
-fig.suptitle('Comparison of Metrics at Different k and Epsilon Levels', fontsize=14)
-
-metrics = ['L_top_k', 'D_top_k', 'Attack Success Rate', 'Recall@top-k', 'End-to-End@top-k']
-data_05 = [L_05, D_05, ASR_05, Recall_05, E2E_05]
-data_08 = [L_08, D_08, ASR_08, Recall_08, E2E_08]
-
-for i, ax in enumerate(axs.flat[:5]):
-    ax.plot(k_values, data_05[i], marker='o', label='epsilon=0.05')
-    ax.plot(k_values, data_08[i], marker='s', label='epsilon=0.08')
-    ax.set_title(metrics[i])
-    ax.set_xlabel('k')
-    ax.set_ylabel(metrics[i])
-    ax.set_xticks(k_values)
-    ax.grid(True)
-    ax.legend()
-
-# Hide the last subplot if unused
-axs.flat[5].axis('off')
-
-plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 plt.show()
