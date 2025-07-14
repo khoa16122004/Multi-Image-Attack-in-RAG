@@ -400,7 +400,7 @@ class EvaluatorEachScore:
         output_dir = os.path.join(self.output_dir, str(sample_id), f"inject_{self.n_k}")
         os.makedirs(output_dir, exist_ok=True)
         
-        for topk in range(1, self.n_k + 1):
+        for topk in range(5):
             data = self.cal_recall_end_to_end(sample_id, topk)
             # ghi vào answers_{topk}.json
             output_path = os.path.join(output_dir, f"answers_{topk}.json")
