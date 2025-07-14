@@ -373,7 +373,7 @@ class EvaluatorEachScore:
         print("All sims:", all_sims)
         sorted_indices = sorted(range(len(all_sims)), key=lambda i: all_sims[i], reverse=True)
         sorted_imgs = [all_imgs[i] for i in sorted_indices]
-        raise
+        # raise
                 
         # end-to-end recall
         pred_ans = self.reader.image_to_text(question, sorted_imgs[:top_k])[0]
