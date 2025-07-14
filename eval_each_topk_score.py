@@ -12,7 +12,7 @@ def main(args):
         for k in range(5):
             score_file = os.path.join(
                 args.extracted_path, sample_id,
-                f"inject_{args.n_k}", f"scores_{k+1}.json"
+                f"inject_{args.n_k}", f"answers_{k+1}.json"
             )
             with open(score_file) as f:
                 totals[k] += json.load(f)["parse_score"]
