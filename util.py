@@ -378,7 +378,7 @@ class EvaluatorEachScore:
         recall_topk = recall_topk / self.n_k
                 
         # end-to-end recall
-        pred_ans = self.reader.image_to_text(question, sorted_imgs[:self.top_k])[0]
+        pred_ans = self.reader.image_to_text(question, sorted_imgs[:top_k])[0]
         system_prompt, user_prompt = get_prompt_compare_answer(gt_answer=golden_answer, model_answer=pred_ans, question=question)
         score_response = self.llm.text_to_text(system_prompt=system_prompt, prompt=user_prompt).strip()
         end_to_end_score = parse_score(score_response)        
