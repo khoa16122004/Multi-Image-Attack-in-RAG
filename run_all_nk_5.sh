@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # qwevl2.5
 CUDA_VISIBLE_DEVICES=7 python main.py \
     --sample_path run.txt \

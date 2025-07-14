@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Deepseekvl2-tiny
 CUDA_VISIBLE_DEVICES=5 python main.py \
     --sample_path run.txt \
