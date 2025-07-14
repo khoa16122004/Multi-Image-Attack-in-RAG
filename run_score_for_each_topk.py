@@ -1,7 +1,7 @@
 import pickle
 import numpy as np
 import json
-from util import Evaluator
+from util import Evaluator, EvaluatorEachScore
 from tqdm import tqdm
 from llm_service import GPTService
 import argparse
@@ -12,7 +12,7 @@ def main(args):
     with open(args.sample_path, "r") as f:
         sample_ids = [int(line.strip()) for line in f]   
     
-    evaluator = Evaluator(args)
+    evaluator = EvaluatorEachScore(args)
     for sample_id in tqdm(sample_ids):
         evaluator.evaluation(sample_id)
         # raise
