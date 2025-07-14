@@ -364,15 +364,16 @@ class EvaluatorEachScore:
         for i in range(self.n_k):
             adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
             adv_imgs.append(adv_img)
-        print(adv_imgs)
-        raise
+        # print(adv_imgs)
+        # raise
         adv_sims = self.retriever(query, adv_imgs).cpu().tolist()
         adv_sims = [item[0] for item in adv_sims]
         all_imgs = retri_imgs + adv_imgs
         all_sims = sims + adv_sims
+        print("All sims:", all_sims)
         sorted_indices = sorted(range(len(all_sims)), key=lambda i: all_sims[i], reverse=True)
         sorted_imgs = [all_imgs[i] for i in sorted_indices]
-
+        raise
                 
         # end-to-end recall
         pred_ans = self.reader.image_to_text(question, sorted_imgs[:top_k])[0]
