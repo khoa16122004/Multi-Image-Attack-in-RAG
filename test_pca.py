@@ -160,7 +160,7 @@ if __name__ == "__main__":
     # Process each sample individually
     processed_count = 0
     failed_count = 0
-    threshold = 25
+    threshold = 50
     
     for i in tqdm(sample_ids, desc="Processing all samples"):
         try:
