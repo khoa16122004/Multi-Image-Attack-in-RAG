@@ -48,7 +48,6 @@ def apply_pca_colormap_batch(patch_features, n_components=3):
     print(f"PCA input shape: {features_reshaped.shape}")
     print(f"PCA output shape: {pca_features.shape}")
     
-    # Normalize each component to [0, 1] range
     for i in range(n_components):
         pca_features[:, i] = (pca_features[:, i] - pca_features[:, i].min()) / (pca_features[:, i].max() - pca_features[:, i].min())
     
@@ -61,42 +60,26 @@ def apply_pca_colormap_batch(patch_features, n_components=3):
 
 def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, grid_size=(27, 27), 
                                   bg_threshold=15, save_dir="pca_visualizations"):
-    """
-    Create PCA visualization for a batch of images
-    
-    Args:
-        retri_imgs: list of images
-        patch_feats_batch: numpy array of shape (B, 729, D)
-        sample_id: sample identifier
-        grid_size: tuple of (height, width) for patch grid (default 27x27 = 729)
-        bg_threshold: percentile threshold for background removal (default 15)
-        save_dir: directory to save visualizations
-    """
     os.makedirs(save_dir, exist_ok=True)
     
     num_images = len(retri_imgs)
     
-    # Create layout - always put all images in same row for original images
     n_cols = num_images  # All images in one row
     
     fig, axes = plt.subplots(2, n_cols, figsize=(3*n_cols, 6))
     
-    # Handle single image case
     if n_cols == 1:
         axes = axes.reshape(2, 1)
     
-    # Apply PCA to entire batch at once
     print("Patch_features batch shape:", patch_feats_batch.shape)
     pca_features_batch = apply_pca_colormap_batch(patch_feats_batch)  # Shape: (B, 729, 3)
     
     for img_idx in range(num_images):
         col = img_idx
         
-        # Get current image and patch features
         img = retri_imgs[img_idx]
         pca_features = pca_features_batch[img_idx]  # Shape: (729, 3)
         
-        # Convert image to numpy if needed
         if isinstance(img, torch.Tensor):
             if img.dim() == 3:
                 img_np = img.permute(1, 2, 0).cpu().numpy()
@@ -105,11 +88,9 @@ def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, gri
         else:
             img_np = np.array(img)
         
-        # Ensure image is in [0, 1] range for display
         if img_np.max() > 1.0:
             img_np = img_np / 255.0
         
-        # Plot original image in top row
         if n_cols == 1:
             axes[0].imshow(img_np)
             axes[0].axis('off')
@@ -119,13 +100,11 @@ def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, gri
             axes[0, col].axis('off')
             axes[0, col].set_title(f'Image {img_idx+1}', fontsize=10)
         
-        # Reshape to grid
         h, w = grid_size
         pca_rgb = pca_features.reshape(h, w, 3)
         
-        # Background removal using first PCA component
         threshold = np.percentile(pca_features[:, 0], bg_threshold)
-        mask = pca_features[:, 0] > threshold
+        mask = pca_features[:, 0] < threshold
         mask = mask.reshape(h, w)
         
         # Create visualization with black background
@@ -161,7 +140,6 @@ if __name__ == "__main__":
     print(f"Total samples to process: {len(sample_ids)}")
     print(f"Sample IDs: {sample_ids}")
     
-    # Process each sample individually
     processed_count = 0
     failed_count = 0
     threshold = 50
@@ -170,20 +148,16 @@ if __name__ == "__main__":
         try:
             print(f"\n[{processed_count + failed_count + 1}/{len(sample_ids)}] Processing sample {i}...")
             
-            # Load data for this sample
             question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = loader.take_retri_data(i)
             
-            # Extract patch features for all images in batch
             patch_feats = model.extract_patch_features(retri_imgs)  # Shape: (num_images, 729, D)
             
-            # Convert to numpy if tensor
             if isinstance(patch_feats, torch.Tensor):
                 patch_feats = patch_feats.cpu().numpy()
             
             print(f"  - Patch features shape: {patch_feats.shape}")
             print(f"  - Number of retrieved images: {len(retri_imgs)}")
             
-            # Create and save visualization with custom threshold
             create_pca_visualization_batch(retri_imgs, patch_feats, i, 
                                          bg_threshold=threshold, save_dir=output_dir)  # Adjustable threshold
             
