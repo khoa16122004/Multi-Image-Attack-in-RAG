@@ -38,7 +38,7 @@ class LLava:
         image_tensors = [_image.to(dtype=torch.float16, device=self.device) for _image in image_tensors]
 
         with torch.no_grad():
-            vision_tower = self.model.vision_tower
+            vision_tower = self.model.get_vision_tower()
             patch_feats = vision_tower.forward_features(torch.stack(image_tensors))["x"]  # (B, N, D)
 
         return patch_feats 
