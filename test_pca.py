@@ -42,7 +42,8 @@ def apply_pca_colormap(patch_features, n_components=3):
     
     return pca_features
 
-def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, grid_size=(27, 27), save_dir="pca_visualizations"):
+def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, grid_size=(27, 27), 
+                                  bg_threshold=15, save_dir="pca_visualizations"):
     """
     Create PCA visualization for a batch of images
     
@@ -51,29 +52,24 @@ def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, gri
         patch_feats_batch: numpy array of shape (num_images, 729, D)
         sample_id: sample identifier
         grid_size: tuple of (height, width) for patch grid (default 27x27 = 729)
+        bg_threshold: percentile threshold for background removal (default 15)
         save_dir: directory to save visualizations
     """
     os.makedirs(save_dir, exist_ok=True)
     
     num_images = len(retri_imgs)
     
-    # Create layout
-    n_cols = min(4, num_images)  # Max 4 columns
-    n_rows = (num_images + n_cols - 1) // n_cols
+    # Create layout - always put all images in same row for original images
+    n_cols = num_images  # All images in one row
     
-    fig, axes = plt.subplots(n_rows * 2, n_cols, figsize=(4*n_cols, 4*n_rows))
+    fig, axes = plt.subplots(2, n_cols, figsize=(3*n_cols, 6))
     
-    # Handle different subplot configurations
-    if n_rows == 1 and n_cols == 1:
+    # Handle single image case
+    if n_cols == 1:
         axes = axes.reshape(2, 1)
-    elif n_rows == 1:
-        axes = axes.reshape(2, -1)
-    elif n_cols == 1:
-        axes = axes.reshape(-1, 1)
     
     for img_idx in range(num_images):
-        row = (img_idx // n_cols) * 2
-        col = img_idx % n_cols
+        col = img_idx
         
         # Get current image and patch features
         img = retri_imgs[img_idx]
@@ -92,15 +88,15 @@ def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, gri
         if img_np.max() > 1.0:
             img_np = img_np / 255.0
         
-        # Plot original image
-        if n_rows == 1 and n_cols == 1:
+        # Plot original image in top row
+        if n_cols == 1:
             axes[0].imshow(img_np)
             axes[0].axis('off')
             axes[0].set_title('Original Image', fontsize=12)
         else:
-            axes[row, col].imshow(img_np)
-            axes[row, col].axis('off')
-            axes[row, col].set_title(f'Image {img_idx+1}', fontsize=10)
+            axes[0, col].imshow(img_np)
+            axes[0, col].axis('off')
+            axes[0, col].set_title(f'Image {img_idx+1}', fontsize=10)
         
         # Apply PCA to patch features
         pca_features = apply_pca_colormap(patch_feats)  # Shape: (729, 3)
@@ -110,7 +106,7 @@ def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, gri
         pca_rgb = pca_features.reshape(h, w, 3)
         
         # Background removal using first PCA component
-        threshold = np.percentile(pca_features[:, 0], 15)  # Remove bottom 15%
+        threshold = np.percentile(pca_features[:, 0], bg_threshold)
         mask = pca_features[:, 0] > threshold
         mask = mask.reshape(h, w)
         
@@ -118,23 +114,15 @@ def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, gri
         vis_img = np.zeros((h, w, 3))
         vis_img[mask] = pca_rgb[mask]
         
-        # Plot PCA visualization
-        if n_rows == 1 and n_cols == 1:
+        # Plot PCA visualization in bottom row
+        if n_cols == 1:
             axes[1].imshow(vis_img)
             axes[1].axis('off')
             axes[1].set_title('PCA Visualization', fontsize=12)
         else:
-            axes[row + 1, col].imshow(vis_img)
-            axes[row + 1, col].axis('off')
-            axes[row + 1, col].set_title(f'PCA {img_idx+1}', fontsize=10)
-    
-    # Hide unused subplots
-    for img_idx in range(num_images, n_rows * n_cols):
-        row = (img_idx // n_cols) * 2
-        col = img_idx % n_cols
-        if n_rows > 1 or n_cols > 1:
-            axes[row, col].axis('off')
-            axes[row + 1, col].axis('off')
+            axes[1, col].imshow(vis_img)
+            axes[1, col].axis('off')
+            axes[1, col].set_title(f'PCA {img_idx+1}', fontsize=10)
     
     plt.suptitle(f'Sample {sample_id}: PCA Visualization of Patch Features ({num_images} images)', fontsize=16)
     plt.tight_layout()
@@ -144,7 +132,7 @@ def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, gri
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
     plt.close()  # Close to free memory
     
-    print(f"Saved visualization for sample {sample_id} to {save_path}")
+    print(f"Saved visualization for sample {sample_id} to {save_path} (threshold={bg_threshold}%)")
 
 # --- Main execution ---
 if __name__ == "__main__":
@@ -158,6 +146,7 @@ if __name__ == "__main__":
     # Process each sample individually
     processed_count = 0
     failed_count = 0
+    threshold = 75
     
     for i in tqdm(sample_ids, desc="Processing all samples"):
         try:
@@ -176,8 +165,9 @@ if __name__ == "__main__":
             print(f"  - Patch features shape: {patch_feats.shape}")
             print(f"  - Number of retrieved images: {len(retri_imgs)}")
             
-            # Create and save visualization
-            create_pca_visualization_batch(retri_imgs, patch_feats, i, save_dir=output_dir)
+            # Create and save visualization with custom threshold
+            create_pca_visualization_batch(retri_imgs, patch_feats, i, 
+                                         bg_threshold=threshold, save_dir=output_dir)  # Adjustable threshold
             
             processed_count += 1
             print(f"  ✓ Successfully processed sample {i}")
@@ -206,9 +196,16 @@ if __name__ == "__main__":
     print(f"="*50)
 
 # Alternative function for processing single sample
-def process_single_sample(sample_id, loader, model, output_dir="pca_visualizations"):
+def process_single_sample(sample_id, loader, model, bg_threshold=20, output_dir="pca_visualizations"):
     """
     Process a single sample and create PCA visualization
+    
+    Args:
+        sample_id: sample identifier
+        loader: data loader
+        model: model for feature extraction
+        bg_threshold: percentile threshold for background removal
+        output_dir: output directory
     """
     try:
         question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = loader.take_retri_data(sample_id)
@@ -220,7 +217,8 @@ def process_single_sample(sample_id, loader, model, output_dir="pca_visualizatio
             patch_feats = patch_feats.cpu().numpy()
         
         # Create visualization
-        create_pca_visualization_batch(retri_imgs, patch_feats, sample_id, save_dir=output_dir)
+        create_pca_visualization_batch(retri_imgs, patch_feats, sample_id, 
+                                     bg_threshold=bg_threshold, save_dir=output_dir)
         
         return True
         
@@ -228,17 +226,53 @@ def process_single_sample(sample_id, loader, model, output_dir="pca_visualizatio
         print(f"Error processing sample {sample_id}: {e}")
         return False
 
-# Example usage for specific samples
-def process_selected_samples(sample_list, loader, model, output_dir="pca_visualizations"):
+# Example usage for specific samples with different thresholds
+def process_selected_samples(sample_list, loader, model, bg_threshold=20, output_dir="pca_visualizations"):
     """
     Process only selected samples
+    
+    Args:
+        sample_list: list of sample IDs to process
+        loader: data loader
+        model: model for feature extraction
+        bg_threshold: percentile threshold for background removal
+        output_dir: output directory
     """
     for sample_id in tqdm(sample_list, desc="Processing selected samples"):
-        success = process_single_sample(sample_id, loader, model, output_dir)
+        success = process_single_sample(sample_id, loader, model, bg_threshold, output_dir)
         if success:
             print(f"Successfully processed sample {sample_id}")
         else:
             print(f"Failed to process sample {sample_id}")
 
-# Uncomment to process only first 5 samples
-process_selected_samples(sample_ids, loader, model)
+# Function to experiment with different thresholds
+def experiment_thresholds(sample_id, loader, model, thresholds=[5, 10, 15, 20, 25, 30], 
+                         output_dir="pca_experiments"):
+    """
+    Experiment with different background thresholds for a single sample
+    """
+    os.makedirs(output_dir, exist_ok=True)
+    
+    try:
+        question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = loader.take_retri_data(sample_id)
+        patch_feats = model.extract_patch_features(retri_imgs)
+        
+        if isinstance(patch_feats, torch.Tensor):
+            patch_feats = patch_feats.cpu().numpy()
+        
+        for threshold in thresholds:
+            print(f"Testing threshold {threshold}% for sample {sample_id}")
+            
+            # Create subfolder for this threshold
+            thresh_dir = os.path.join(output_dir, f"threshold_{threshold}")
+            create_pca_visualization_batch(retri_imgs, patch_feats, sample_id, 
+                                         bg_threshold=threshold, save_dir=thresh_dir)
+            
+    except Exception as e:
+        print(f"Error in threshold experiment for sample {sample_id}: {e}")
+
+# Uncomment to process only first 5 samples with custom threshold
+# process_selected_samples(sample_ids[:5], loader, model, bg_threshold=25)
+
+# Uncomment to experiment with different thresholds on one sample
+# experiment_thresholds(sample_ids[0], loader, model)
