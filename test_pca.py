@@ -48,8 +48,8 @@ def apply_pca_colormap_batch(patch_features, n_components=3):
     print(f"PCA input shape: {features_reshaped.shape}")
     print(f"PCA output shape: {pca_features.shape}")
     
-    # for i in range(n_components):
-    #     pca_features[:, i] = (pca_features[:, i] - pca_features[:, i].min()) / (pca_features[:, i].max() - pca_features[:, i].min())
+    for i in range(n_components):
+        pca_features[:, i] = (pca_features[:, i] - pca_features[:, i].min()) / (pca_features[:, i].max() - pca_features[:, i].min())
     
     # Reshape back to (B, 729, 3)
     pca_features = pca_features.reshape(B, num_patches, n_components)
