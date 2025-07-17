@@ -23,4 +23,4 @@ image_token = "<image>"
 sample_index = 10
 question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = loader.take_retri_data(sample_ids[sample_index])
 patch_feats = model.extract_patch_features(retri_imgs)
-print(patch_feats.shape)  # Should print the shape of the patch features tensor
+print(patch_feats)  # Should print the shape of the patch features tensor
