@@ -35,7 +35,8 @@ def apply_pca_colormap(patch_features, n_components=3):
     # Apply PCA
     pca = PCA(n_components=n_components)
     pca_features = pca.fit_transform(patch_features)  # (729, 3)
-    
+    print("PCA: ", pca_features.shape)
+    raise
     # Normalize each component to [0, 1] range
     for i in range(n_components):
         pca_features[:, i] = (pca_features[:, i] - pca_features[:, i].min()) / (pca_features[:, i].max() - pca_features[:, i].min())
@@ -99,6 +100,7 @@ def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, gri
             axes[0, col].set_title(f'Image {img_idx+1}', fontsize=10)
         
         # Apply PCA to patch features
+        print("Patch_features shape:", patch_feats.shape)
         pca_features = apply_pca_colormap(patch_feats)  # Shape: (729, 3)
         
         # Reshape to grid
