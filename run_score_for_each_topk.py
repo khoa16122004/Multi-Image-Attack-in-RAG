@@ -39,3 +39,5 @@ if __name__ == "__main__":
     main(args)
     
     # param
+    
+# CUDA_VISIBLE_DEVICES=3 python run_score_for_each_topk.py --n_k 1 --retriever_name clip --reader_name llava-one --std 0.05 --attack_result_path attack_result_usingquestion\=1/clip_llava-one_0.05 --result_clean_dir result_usingquery\=0_clip --sample_path run.txt --using_question 1 --method nsga2 --llm gpt --target_answer golden_answer
