@@ -65,5 +65,5 @@ question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = loade
 patch_feats = model.extract_patch_features(retri_imgs)
 print(patch_feats.shape)  # Should print the shape of the patch features tensor
 
-save_patch_visualizations(patch_feats, retri_imgs, save_dir="vis_patch_rgb")
+save_patch_visualizations(patch_feats, retri_imgs)
 
