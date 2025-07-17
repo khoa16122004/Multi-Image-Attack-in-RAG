@@ -163,8 +163,8 @@ for i in tqdm(sample_ids):
         upsampled_imgs, pca = create_pca_visualization(
             patch_feats, 
             retri_imgs, 
-            patch_size=16,  # Adjust based on your model's patch size
-            threshold_percentile=25
+            patch_size=12,  # Adjust based on your model's patch size
+            threshold_percentile=50
         )
         
         # Optional: Save results
@@ -192,6 +192,6 @@ for i in tqdm(sample_ids):
         continue
     
     # Optional: Add pause between samples
-    input("Press Enter to continue to next sample...")
+    # input("Press Enter to continue to next sample...")
 
 print("PCA visualization completed!")
