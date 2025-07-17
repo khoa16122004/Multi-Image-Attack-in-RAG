@@ -1,21 +1,12 @@
+import os
+import torch
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.decomposition import PCA
 from lvlm_models.llava_ import LLava
 from util import DataLoader
-import os
-import torch
-import os
-import torch
-import torchvision.transforms.functional as TF
-from sklearn.decomposition import PCA
-from torchvision.utils import save_image
-import matplotlib.pyplot as plt
 
 def save_patch_visualizations(patch_feats, retri_imgs, save_path="vis_patch_rgb/grid.jpg", topk_percent=50):
-    import os
-    import torch
-    import matplotlib.pyplot as plt
-    from sklearn.decomposition import PCA
-    import numpy as np
-
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
     B, N, D = patch_feats.shape
@@ -23,7 +14,7 @@ def save_patch_visualizations(patch_feats, retri_imgs, save_path="vis_patch_rgb/
     fig, axs = plt.subplots(nrows=B, ncols=2, figsize=(6, 3 * B))
 
     if B == 1:
-        axs = [axs]
+        axs = [axs]  # Ensure 2D indexing
 
     for i in range(B):
         img = retri_imgs[i]
@@ -33,7 +24,7 @@ def save_patch_visualizations(patch_feats, retri_imgs, save_path="vis_patch_rgb/
 
         patch = patch_feats[i]  # (N, D)
 
-        # --- Bước lọc background bằng norm ---
+        # ---- Lọc background ----
         norm = patch.norm(dim=1)  # (N,)
         k = int(N * topk_percent / 100)
         topk_indices = torch.topk(norm, k).indices
@@ -42,7 +33,7 @@ def save_patch_visualizations(patch_feats, retri_imgs, save_path="vis_patch_rgb/
         patch_filtered = patch.clone()
         patch_filtered[~mask] = 0  # zero-out background
 
-        # --- PCA ---
+        # ---- PCA ----
         pca = PCA(n_components=3)
         patch_rgb = pca.fit_transform(patch_filtered.cpu().numpy())  # (N, 3)
         patch_rgb = patch_rgb.reshape(side, side, 3)
@@ -57,27 +48,23 @@ def save_patch_visualizations(patch_feats, retri_imgs, save_path="vis_patch_rgb/
     plt.close()
 
 
-# data
+# --- Load data ---
 result_clean_dir = "result_usingquery=0_clip"
 loader = DataLoader(retri_dir=result_clean_dir)
 sample_path = "run.txt"
+
 with open(sample_path, "r") as f:
     sample_ids = [int(line.strip()) for line in f]
 
-# model
-instruction = "Answer the given question based only on the visual content of the images. Do not guess or use outside knowledge. Just return the answer and nothing else."
+# --- Load model ---
 model = LLava(
     pretrained="llava-next-interleave-qwen-7b",
     model_name="llava_qwen",
 )
 
-image_token = "<image>"
-
-# sample
-sample_index = 10
-question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = loader.take_retri_data(sample_ids[sample_index])
-patch_feats = model.extract_patch_features(retri_imgs)
-print(patch_feats.shape)  # Should print the shape of the patch features tensor
-
-save_patch_visualizations(patch_feats, retri_imgs)
-
+# --- Visualize for each sample ---
+for i in sample_ids:
+    question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = loader.take_retri_data(i)
+    patch_feats = model.extract_patch_features(retri_imgs)
+    save_path = f"vis_patch_rgb/sample_{i}.jpg"
+    save_patch_visualizations(patch_feats, retri_imgs, save_path=save_path, topk_percent=50)
