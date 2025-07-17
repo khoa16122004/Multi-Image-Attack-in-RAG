@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.decomposition import PCA
 from lvlm_models.llava_ import LLava
 from util import DataLoader
-
+from tqdm import tqdm
 def save_patch_visualizations(patch_feats, retri_imgs, save_path="vis_patch_rgb/grid.jpg", topk_percent=50):
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
@@ -63,7 +63,7 @@ model = LLava(
 )
 
 # --- Visualize for each sample ---
-for i in sample_ids:
+for i in tqdm(sample_ids):
     question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = loader.take_retri_data(i)
     patch_feats = model.extract_patch_features(retri_imgs)
     save_path = f"vis_patch_rgb/sample_{i}.jpg"
