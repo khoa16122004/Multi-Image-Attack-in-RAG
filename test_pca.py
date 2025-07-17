@@ -9,33 +9,47 @@ from sklearn.decomposition import PCA
 from torchvision.utils import save_image
 import matplotlib.pyplot as plt
 
-def save_patch_visualizations(patch_feats, retri_imgs, save_path="vis_patch_rgb/grid.jpg"):
+def save_patch_visualizations(patch_feats, retri_imgs, save_path="vis_patch_rgb/grid.jpg", topk_percent=50):
+    import os
+    import torch
+    import matplotlib.pyplot as plt
+    from sklearn.decomposition import PCA
+    import numpy as np
+
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
     B, N, D = patch_feats.shape
     side = int(N ** 0.5)
-
     fig, axs = plt.subplots(nrows=B, ncols=2, figsize=(6, 3 * B))
 
     if B == 1:
-        axs = [axs]  # Ensure axs[i][j] is accessible
+        axs = [axs]
 
     for i in range(B):
-        # Cột 1: Ảnh gốc
         img = retri_imgs[i]
         axs[i][0].imshow(img)
         axs[i][0].set_title("Original")
         axs[i][0].axis("off")
 
-        # Cột 2: PCA patch -> ảnh
-        pca = PCA(n_components=3)
-        patch_rgb = pca.fit_transform(patch_feats[i].cpu().numpy())  # (N, 3)
-        patch_rgb = patch_rgb.reshape(side, side, 3)
+        patch = patch_feats[i]  # (N, D)
 
+        # --- Bước lọc background bằng norm ---
+        norm = patch.norm(dim=1)  # (N,)
+        k = int(N * topk_percent / 100)
+        topk_indices = torch.topk(norm, k).indices
+        mask = torch.zeros(N, dtype=torch.bool, device=patch.device)
+        mask[topk_indices] = True
+        patch_filtered = patch.clone()
+        patch_filtered[~mask] = 0  # zero-out background
+
+        # --- PCA ---
+        pca = PCA(n_components=3)
+        patch_rgb = pca.fit_transform(patch_filtered.cpu().numpy())  # (N, 3)
+        patch_rgb = patch_rgb.reshape(side, side, 3)
         patch_rgb = (patch_rgb - patch_rgb.min()) / (patch_rgb.max() - patch_rgb.min() + 1e-5)
 
         axs[i][1].imshow(patch_rgb)
-        axs[i][1].set_title("Patch PCA")
+        axs[i][1].set_title(f"Patch PCA ({topk_percent}%)")
         axs[i][1].axis("off")
 
     plt.tight_layout()
