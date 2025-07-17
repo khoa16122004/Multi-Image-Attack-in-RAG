@@ -21,25 +21,37 @@ model = LLava(
     model_name="llava_qwen",
 )
 
-def apply_pca_colormap(patch_features, n_components=3):
+def apply_pca_colormap_batch(patch_features, n_components=3):
     """
-    Apply PCA to patch features and convert to RGB colormap
+    Apply PCA to batch of patch features and convert to RGB colormap
     
     Args:
-        patch_features: numpy array of shape (729, D) where D is feature dimension
+        patch_features: numpy array of shape (B, 729, D) where B is batch size, D is feature dimension
         n_components: number of PCA components to use (typically 3 for RGB)
     
     Returns:
-        pca_features: numpy array of shape (729, 3) with PCA components
+        pca_features: numpy array of shape (B, 729, 3) with PCA components
     """
+    B, num_patches, D = patch_features.shape
+    
+    # Reshape to (B*729, D) for PCA fitting
+    features_reshaped = patch_features.reshape(-1, D)  # (B*729, D)
+    
     # Apply PCA
     pca = PCA(n_components=n_components)
-    pca_features = pca.fit_transform(patch_features)  # (729, 3)
-    print("PCA: ", pca_features.shape)
-    raise
+    pca_features = pca.fit_transform(features_reshaped)  # (B*729, 3)
+    
+    print(f"PCA input shape: {features_reshaped.shape}")
+    print(f"PCA output shape: {pca_features.shape}")
+    
     # Normalize each component to [0, 1] range
     for i in range(n_components):
         pca_features[:, i] = (pca_features[:, i] - pca_features[:, i].min()) / (pca_features[:, i].max() - pca_features[:, i].min())
+    
+    # Reshape back to (B, 729, 3)
+    pca_features = pca_features.reshape(B, num_patches, n_components)
+    
+    print(f"Final PCA shape: {pca_features.shape}")
     
     return pca_features
 
@@ -50,7 +62,7 @@ def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, gri
     
     Args:
         retri_imgs: list of images
-        patch_feats_batch: numpy array of shape (num_images, 729, D)
+        patch_feats_batch: numpy array of shape (B, 729, D)
         sample_id: sample identifier
         grid_size: tuple of (height, width) for patch grid (default 27x27 = 729)
         bg_threshold: percentile threshold for background removal (default 15)
@@ -69,12 +81,16 @@ def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, gri
     if n_cols == 1:
         axes = axes.reshape(2, 1)
     
+    # Apply PCA to entire batch at once
+    print("Patch_features batch shape:", patch_feats_batch.shape)
+    pca_features_batch = apply_pca_colormap_batch(patch_feats_batch)  # Shape: (B, 729, 3)
+    
     for img_idx in range(num_images):
         col = img_idx
         
         # Get current image and patch features
         img = retri_imgs[img_idx]
-        patch_feats = patch_feats_batch[img_idx]  # Shape: (729, D)
+        pca_features = pca_features_batch[img_idx]  # Shape: (729, 3)
         
         # Convert image to numpy if needed
         if isinstance(img, torch.Tensor):
@@ -98,10 +114,6 @@ def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, gri
             axes[0, col].imshow(img_np)
             axes[0, col].axis('off')
             axes[0, col].set_title(f'Image {img_idx+1}', fontsize=10)
-        
-        # Apply PCA to patch features
-        print("Patch_features shape:", patch_feats.shape)
-        pca_features = apply_pca_colormap(patch_feats)  # Shape: (729, 3)
         
         # Reshape to grid
         h, w = grid_size
