@@ -143,7 +143,7 @@ def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, gri
 # --- Main execution ---
 if __name__ == "__main__":
     # Create output directory
-    output_dir = "pca_visualizations"
+    output_dir = f"pca_adv_nk={n_k}_visualizations"
     os.makedirs(output_dir, exist_ok=True)
     
     print(f"Total samples to process: {len(sample_ids)}")
@@ -188,7 +188,7 @@ if __name__ == "__main__":
             print(f"  - Number of retrieved images: {len(retri_imgs)}")
             
             # Create and save visualization with custom threshold
-            create_pca_visualization_batch(retri_imgs, patch_feats, i, 
+            create_pca_visualization_batch(sorted_imgs, patch_feats, i, 
                                          bg_threshold=threshold, save_dir=output_dir)  # Adjustable threshold
             
             processed_count += 1
