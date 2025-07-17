@@ -104,7 +104,7 @@ def create_pca_visualization_batch(retri_imgs, patch_feats_batch, sample_id, gri
         pca_rgb = pca_features.reshape(h, w, 3)
         
         threshold = np.percentile(pca_features[:, 0], bg_threshold)
-        mask = pca_features[:, 0] < threshold
+        mask = pca_features[:, 0] > threshold
         mask = mask.reshape(h, w)
         
         # Create visualization with black background
