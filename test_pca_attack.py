@@ -152,7 +152,7 @@ if __name__ == "__main__":
     # Process each sample individually
     processed_count = 0
     failed_count = 0
-    threshold = 50
+    threshold = 25
     
     for i in tqdm(sample_ids, desc="Processing all samples"):
         try:
@@ -163,8 +163,8 @@ if __name__ == "__main__":
             
             imgs_path = os.path.join(attack_result_dir, str(i))
             adv_imgs = []    
-            for i in range(n_k):
-                adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
+            for j in range(n_k):
+                adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{j + 1}.pkl"), "rb"))
                 adv_imgs.append(adv_img)
             # print(adv_imgs)
             # raise
