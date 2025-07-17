@@ -16,8 +16,12 @@ with open(sample_path, "r") as f:
     sample_ids = [int(line.strip()) for line in f]
 
 # --- Load model ---
+# model = LLava(
+#     pretrained="llava-next-interleave-qwen-7b",
+#     model_name="llava_qwen",
+# )
 model = LLava(
-    pretrained="llava-next-interleave-qwen-7b",
+    pretrained="llava-onevision-qwen2-7b-ov",
     model_name="llava_qwen",
 )
 
