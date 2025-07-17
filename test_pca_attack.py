@@ -11,7 +11,7 @@ from retriever import Retriever
 
 # --- Load data ---
 result_clean_dir = "result_usingquery=0_clip"
-attack_result_dir = "attack_result_usingquestion_1/clip_llava-next_0.05"
+attack_result_dir = "attack_result_usingquestion=1/clip_llava-next_0.05"
 loader = DataLoader(retri_dir=result_clean_dir)
 retriever = Retriever("clip")
 
