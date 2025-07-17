@@ -37,11 +37,13 @@ class LLava:
         image_tensors = process_images(img_files, self.image_processor, self.model.config)
         image_tensors = [_image.to(dtype=torch.float16, device=self.device) for _image in image_tensors]
 
-        with torch.no_grad():
-            vision_tower = self.model.get_vision_tower()
-            patch_feats = vision_tower.forward_features(torch.stack(image_tensors))["x"]  # (B, N, D)
+        vision_tower = self.model.get_vision_tower()
+        vision_tower.load_model()  # chắc chắn đã load vision model
 
-        return patch_feats 
+        with torch.no_grad():
+            patch_feats = vision_tower(image_tensors)  # shape (B, 729, D)
+
+        return patch_feats  # Tensor (B, 729, D)
     
     def __call__(self, qs, img_files, num_return_sequences=1, do_sample=False, temperature=0, reload=False):
         # reload_llm
