@@ -12,10 +12,14 @@ def save_patch_visualizations(patch_feats, retri_imgs, save_dir="vis_patch_rgb")
     os.makedirs(save_dir, exist_ok=True)
 
     B, N, D = patch_feats.shape
-    H_img, W_img = retri_imgs.shape[-2:]  # kích thước ảnh gốc
-    side = int(N ** 0.5)  # 27 nếu là 729 patch
+    side = int(N ** 0.5)  # 27 nếu 729 patch
 
     for i in range(B):
+        # Lấy ảnh PIL và convert sang tensor
+        pil_img = retri_imgs[i]
+        orig_img = TF.to_tensor(pil_img)  # (3, H, W)
+        H_img, W_img = orig_img.shape[1:]
+
         # Giảm chiều bằng PCA
         pca = PCA(n_components=3)
         patch_rgb = pca.fit_transform(patch_feats[i].cpu().numpy())  # (729, 3)
@@ -23,7 +27,7 @@ def save_patch_visualizations(patch_feats, retri_imgs, save_dir="vis_patch_rgb")
 
         # Reshape thành ảnh 3x27x27
         patch_rgb = patch_rgb.reshape(3, side, side)
-        
+
         # Normalize về [0,1]
         patch_rgb = (patch_rgb - patch_rgb.min()) / (patch_rgb.max() - patch_rgb.min() + 1e-5)
 
@@ -32,7 +36,6 @@ def save_patch_visualizations(patch_feats, retri_imgs, save_dir="vis_patch_rgb")
         patch_rgb = torch.nn.functional.interpolate(patch_rgb, size=(H_img, W_img), mode='bilinear', align_corners=False).squeeze(0)
 
         # Nối ảnh gốc và ảnh PCA
-        orig_img = retri_imgs[i].cpu()
         output = torch.cat([orig_img, patch_rgb], dim=-1)  # Nối theo chiều ngang
 
         # Lưu ảnh
