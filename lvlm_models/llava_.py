@@ -38,12 +38,17 @@ class LLava:
         image_tensors = [_image.to(dtype=torch.float16, device=self.device) for _image in image_tensors]
 
         vision_tower = self.model.get_vision_tower()
-        vision_tower.load_model()  # chắc chắn đã load vision model
+        vision_tower.load_model()  # bắt buộc phải gọi vì SigLIP delay load
 
         with torch.no_grad():
-            patch_feats = vision_tower(image_tensors)  # shape (B, 729, D)
+            features = []
+            for img in image_tensors:
+                img = img.unsqueeze(0)
+                out = vision_tower(img)  # (1, 729, D)
+                features.append(out)
+            patch_feats = torch.cat(features, dim=0)  # (B, 729, D)
 
-        return patch_feats  # Tensor (B, 729, D)
+        return patch_feats
     
     def __call__(self, qs, img_files, num_return_sequences=1, do_sample=False, temperature=0, reload=False):
         # reload_llm
