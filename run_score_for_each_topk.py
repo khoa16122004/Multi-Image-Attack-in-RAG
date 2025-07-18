@@ -21,7 +21,6 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--n_k", type=int, required=True)
-    # parser.add_argument("--dataset_dir", type=str, required=True)
     parser.add_argument("--retriever_name", type=str, default= "clip")
     parser.add_argument("--reader_name", type=str, default="llava-one")
     parser.add_argument("--std", type=float, default=0.05)
@@ -34,6 +33,7 @@ if __name__ == "__main__":
     parser.add_argument("--method", type=str, default="random", choices=["random", "nsga2", "ga"])
     parser.add_argument("--llm", type=str, choices=['gpt', 'llama', 'gemma'])
     parser.add_argument("--target_answer", type=str, choices=['golden_answer', 'gt_answer'])
+    parser.add_argument("--mode", type=str, choices=['all', 'end_to_end', 'retrieval'])
     # if non method in the path, it's nsgaii
     args = parser.parse_args()
     main(args)
