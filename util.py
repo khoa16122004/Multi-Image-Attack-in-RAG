@@ -353,7 +353,7 @@ class EvaluatorEachScore:
             self.llm = GPTService("gpt-4o")
 
 
-    def cal_recall_end_to_end(self, sample_id, top_k):                
+    def cal_end_to_end(self, sample_id, top_k):                
         question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
         golden_answer = self.reader.image_to_text(question, retri_imgs[:top_k])[0]
 
@@ -390,20 +390,58 @@ class EvaluatorEachScore:
             
         }
 
-
-
         return data
+    
+    def cal_clean_metrics(self, sample_id, top_k):
+        question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
+
+        imgs_path = os.path.join(self.attack_result_path, str(sample_id))
+        adv_imgs = []
+        for i in range(self.n_k):
+            adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
+            adv_imgs.append(adv_img)
+
+        adv_sims = self.retriever(query, adv_imgs).cpu().tolist()
+        adv_sims = [s[0] for s in adv_sims]
+
+        all_imgs = retri_imgs + adv_imgs
+        all_sims = sims + adv_sims
+        sorted_indices = sorted(range(len(all_sims)), key=lambda i: all_sims[i], reverse=True)
+        clean_indices = set(range(len(retri_imgs))) 
+
+        topk_indices = sorted_indices[:top_k]
+        num_clean_in_topk = sum([1 for i in topk_indices if i in clean_indices])
+        clean_rate_topk = num_clean_in_topk / top_k
+
+        ranks = []
+        for i in topk_indices:
+            if i in clean_indices:
+                rank = topk_indices.index(i) + 1  # 1-based
+                ranks.append(1.0 / rank)
+        clean_mrr_topk = sum(ranks) / len(ranks) if ranks else 0.0
+
+        return {
+            "clean_rate_topk": clean_rate_topk,
+            "clean_mrr_topk": clean_mrr_topk,
+        }
+    
+        
     
     def evaluation(self, sample_id):
         output_dir = os.path.join(self.output_dir, str(sample_id), f"inject_{self.n_k}")
         os.makedirs(output_dir, exist_ok=True)
         
         for topk in range(1, 6):
-            data = self.cal_recall_end_to_end(sample_id, topk)
+            end_to_end = self.cal_recall_end_to_end(sample_id, topk)
+            retrieval_performance = self.cal_clean_metrics(sample_id, topk)
             # ghi vào answers_{topk}.json
             output_path = os.path.join(output_dir, f"answers_{topk}.json")
             with open(output_path, "w") as f:
-                json.dump(data, f, indent=4)
+                json.dump(end_to_end, f, indent=4)
+                
+            output_path = os.path.join(output_dir, f"retrieval_{topk}.json")
+            with open(output_path, "w") as f:
+                json.dump(retrieval_performance, f, indent=4)
             
          
     

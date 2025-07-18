@@ -5,7 +5,7 @@ from tqdm import tqdm
 import argparse
 
 def main(args):
-    totals = np.zeros(5, dtype=float)
+    totals_end_to_end = np.zeros(5, dtype=float)
 
     sample_list = os.listdir(args.extracted_path)
     for sample_id in tqdm(sample_list):
