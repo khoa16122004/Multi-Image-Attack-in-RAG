@@ -14,7 +14,7 @@ def main(args):
     
     evaluator = EvaluatorEachScore(args)
     for sample_id in tqdm(sample_ids):
-        evaluator.evaluation(sample_id)
+        evaluator.evaluation(sample_id, mode=args.mode)
         # raise
 
 
