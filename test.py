@@ -1,43 +1,56 @@
 import matplotlib.pyplot as plt
 
-# Dữ liệu
-clean_rates = {
-    1: [0.13, 0.515, 0.6733, 0.755, 0.8],
-    2: [0.05, 0.205, 0.38, 0.5175, 0.61],
-    3: [0.04, 0.095, 0.21, 0.32, 0.43]
+positions = [1, 2, 3, 4, 5]
+
+clean_rate = {
+    1: [0.13, 0.515, 0.6733333333333326, 0.755, 0.7999999999999985],
+    2: [0.05, 0.205, 0.37999999999999984, 0.5175, 0.6100000000000009],
+    3: [0.04, 0.095, 0.20999999999999988, 0.32, 0.4299999999999994],
+    0: [1] * 5,
 }
 
-mrr_scores = {
-    1: [0.13, 0.5575, 0.4489, 0.3832, 0.3390],
-    2: [0.05, 0.23, 0.41, 0.3386, 0.2948],
-    3: [0.04, 0.115, 0.2508, 0.3275, 0.2755]
+mrr_score = {
+    1: [0.13, 0.5575, 0.44888888888888867, 0.3831944444444447, 0.33899999999999963],
+    2: [0.05, 0.23, 0.4100000000000001, 0.3386111111111114, 0.2948472222222225],
+    3: [0.04, 0.115, 0.2508333333333332, 0.3275, 0.2754722222222224],
+    0: [1] * 5,
 }
 
-top_k = [1, 2, 3, 4, 5]
-colors = ['blue', 'green', 'red']
+colors = {
+    0: "black",
+    1: "blue",
+    2: "green",
+    3: "red"
+}
 
-# Vẽ biểu đồ Clean Rate
-plt.figure(figsize=(10, 4))
-for i, k in enumerate(clean_rates):
-    plt.plot(top_k, clean_rates[k], label=f'k={k}', marker='o', color=colors[i])
-plt.title("Clean Rate per Top-k Position")
-plt.xlabel("Top-k Position")
-plt.ylabel("Clean Rate")
-plt.ylim(0, 1)
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+labels = {
+    0: "k=0 (not poision)",
+    1: "Inject k=1",
+    2: "Inject k=2",
+    3: "Inject k=3"
+}
 
-# Vẽ biểu đồ MRR Score
-plt.figure(figsize=(10, 4))
-for i, k in enumerate(mrr_scores):
-    plt.plot(top_k, mrr_scores[k], label=f'k={k}', marker='o', color=colors[i])
-plt.title("MRR Score per Top-k Position")
-plt.xlabel("Top-k Position")
-plt.ylabel("MRR Score")
-plt.ylim(0, 1)
-plt.legend()
-plt.grid(True)
+fig, axs = plt.subplots(1, 2, figsize=(12, 5))
+
+# Plot Clean Rate
+for k in [0, 1, 2, 3]:
+    axs[0].plot(positions, clean_rate[k], label=labels[k], color=colors[k], marker="o")
+axs[0].set_title("Mean Clean Rate per Top-k Position")
+axs[0].set_xlabel("Top-k Position")
+axs[0].set_ylabel("Clean Rate")
+axs[0].set_xticks(positions)
+axs[0].legend()
+axs[0].grid(True)
+
+# Plot MRR Score
+for k in [0, 1, 2, 3]:
+    axs[1].plot(positions, mrr_score[k], label=labels[k], color=colors[k], marker="o")
+axs[1].set_title("Mean MRR Score per Top-k Position")
+axs[1].set_xlabel("Top-k Position")
+axs[1].set_ylabel("MRR Score")
+axs[1].set_xticks(positions)
+axs[1].legend()
+axs[1].grid(True)
+
 plt.tight_layout()
 plt.show()
