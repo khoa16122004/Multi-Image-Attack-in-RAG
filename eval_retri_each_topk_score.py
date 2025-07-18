@@ -16,8 +16,9 @@ def main(args):
                 f"inject_{args.n_k}", f"retrieval_{k+1}.json"
             )
             with open(score_file) as f:
-                clean_rate_totals[k] += json.load(f)["clean_rate_topk"]
-                clean_mrr_totals[k] += json.load(f)["clean_mrr_topk"]
+                data = json.load(f)
+                clean_rate_totals[k] += data["clean_rate_topk"]
+                clean_mrr_totals[k] += data["clean_mrr_topk"]
             
 
 
