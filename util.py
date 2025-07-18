@@ -331,7 +331,8 @@ class Evaluator:
             
 class EvaluatorEachScore:
     def __init__(self, args):
-        if args.reader:
+        if args.reader_name:
+            print("Using reader:", args.reader_name)
             self.reader = Reader(args.reader_name)
         self.retriever = Retriever(args.retriever_name)
         self.retriever_name = args.retriever_name
