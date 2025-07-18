@@ -219,7 +219,11 @@ def parse_score(text):
 
 class Evaluator:
     def __init__(self, args):
-        self.reader = Reader(args.reader_name)
+        if args.mode == "all":
+            self.reader = Reader(args.reader_name)
+        else:
+            self.reader = None
+            
         self.retriever = Retriever(args.retriever_name)
         self.retriever_name = args.retriever_name
         self.reader_name = args.reader_name
@@ -434,26 +438,25 @@ class EvaluatorEachScore:
         os.makedirs(output_dir, exist_ok=True)
         
         for topk in range(1, 6):
-            if mode == "all":
-                end_to_end = self.cal_recall_end_to_end(sample_id, topk)
-                retrieval_performance = self.cal_clean_metrics(sample_id, topk)
-                
-            elif mode == "end_to_end":
+            if self.reader:
                 end_to_end = self.cal_end_to_end(sample_id, topk)
-                retrieval_performance = None
-            elif mode == "retrieval":
+            else:
                 end_to_end = None
-                retrieval_performance = self.cal_clean_metrics(sample_id, topk)
+            
+            retrieval_performance = self.cal_clean_metrics(sample_id, topk)
+
             
             if end_to_end:
                 output_path = os.path.join(output_dir, f"answers_{topk}.json")
                 with open(output_path, "w") as f:
                     json.dump(end_to_end, f, indent=4)
             
-            if retrieval_performance:   
+            if retrieval_performance:
                 output_path = os.path.join(output_dir, f"retrieval_{topk}.json")
                 with open(output_path, "w") as f:
-                    json.dump(retrieval_performance, f, indent=4)
+                    json.dump(retrieval_performance, f, indent=4) 
+            
+            
             
          
     
