@@ -338,6 +338,9 @@ class EvaluatorEachScore:
         if args.mode == "all":
             print("Using reader:", args.reader_name)
             self.reader = Reader(args.reader_name)
+        else:
+            self.reader = None
+            
         self.retriever = Retriever(args.retriever_name)
         self.retriever_name = args.retriever_name
         self.reader_name = args.reader_name
