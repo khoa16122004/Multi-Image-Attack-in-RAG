@@ -10,6 +10,7 @@ from retriever import Retriever
 from tqdm import tqdm
 from llm_service import LlamaService, GPTService
 import re
+import matplotlib.patches as patches
 
 def dominate(a, b):
     if a[0] < b[0] and a[1] < b[1]:
@@ -461,9 +462,72 @@ class EvaluatorEachScore:
             
             
             
-         
-    
+        
+class VisualizerTopkResults:
+    def __init__(self, args):
+        self.reader = Reader(args.reader_name)
+        self.retriever = Retriever(args.retriever_name)
+        self.retriever_name = args.retriever_name
+        self.reader_name = args.reader_name
+        self.n_k = args.n_k
+        self.attack_result_path = args.attack_result_path
+        self.loader = DataLoader(retri_dir=args.result_clean_dir)
+        self.init_llm(args.llm)
+        self.output_dir = f"visualize_figure_results_nk={self.n_k}_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}"
+        os.makedirs(self.output_dir, exist_ok=True)
 
+    def init_llm(self, model_name):
+        if model_name == "llama":
+            self.llm = LlamaService("Llama-13b")
+        elif model_name == "gpt":
+            self.llm = GPTService("gpt-4o")
+
+    def visualize_topk(self, sample_id, top_k=5):
+        question, _, query, _, _, retri_imgs, sims = self.loader.take_retri_data(sample_id)
+
+        imgs_path = os.path.join(self.attack_result_path, str(sample_id))
+        adv_imgs = []
+        for i in range(self.n_k):
+            adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
+            adv_imgs.append(adv_img)
+
+        adv_sims = self.retriever(query, adv_imgs).cpu().tolist()
+        adv_sims = [item[0] for item in adv_sims]
+
+        all_imgs = retri_imgs + adv_imgs
+        all_sims = sims + adv_sims
+        sorted_indices = sorted(range(len(all_sims)), key=lambda i: all_sims[i], reverse=True)
+        sorted_imgs = [all_imgs[i] for i in sorted_indices[:top_k]]
+
+        is_adv = [(i >= len(retri_imgs)) for i in sorted_indices[:top_k]]
+
+        # Plot top-k
+        fig, axes = plt.subplots(1, top_k, figsize=(3 * top_k, 3))
+        for i in range(top_k):
+            img = sorted_imgs[i]
+            ax = axes[i]
+            if isinstance(img, np.ndarray):
+                img = Image.fromarray((img * 255).astype(np.uint8)) if img.max() <= 1 else Image.fromarray(img.astype(np.uint8))
+            ax.imshow(img)
+            ax.axis("off")
+            ax.set_title(f"Rank {i+1}")
+            if is_adv[i]:
+                rect = patches.Rectangle((0, 0), img.width, img.height, linewidth=6, edgecolor='red', facecolor='none')
+                ax.add_patch(rect)
+
+        output_img_dir = os.path.join(self.output_dir, str(sample_id), f"inject_{self.n_k}")
+        os.makedirs(output_img_dir, exist_ok=True)
+        fig.savefig(os.path.join(output_img_dir, f"top{top_k}_visualize.png"))
+        plt.close()
+
+        # Generate answers with increasing top-k
+        answer_dict = {"question": question}
+        for k in range(1, top_k + 1):
+            pred_ans = self.reader.image_to_text(question, sorted_imgs[:k])[0]
+            answer_dict[f"top{k}_answer"] = pred_ans
+
+        with open(os.path.join(output_img_dir, "answers.json"), "w") as f:
+            json.dump(answer_dict, f, indent=4)
 
 
 
