@@ -98,34 +98,33 @@ class InternVL:
         return [response]
     
     def compute_log_prob(self, question, img_files, answer):
-        # Load image(s)
         all_pixel_values = []
         for path in img_files:
             pixels = load_image(path, input_size=self.input_size)
             all_pixel_values.append(pixels)
         pixel_values = torch.cat(all_pixel_values, dim=0).to(self.dtype).to(self.device)
 
-        # Tokenize input question and target answer
-        input_ids = self.tokenizer(question, return_tensors="pt").input_ids.to(self.device)
-        target_ids = self.tokenizer(answer, return_tensors="pt").input_ids.to(self.device)
+        question_tokens = self.tokenizer(question, return_tensors="pt", add_special_tokens=False)
+        answer_tokens = self.tokenizer(answer, return_tensors="pt", add_special_tokens=False)
 
-        # Concatenate question and target answer for teacher-forcing
-        input_ids = torch.cat([input_ids, target_ids[:, :-1]], dim=-1)
+        input_ids_q = question_tokens["input_ids"].to(self.device)
+        input_ids_a = answer_tokens["input_ids"].to(self.device)
 
-        # Forward pass (shifted labels to the right)
-        outputs = self.model(
-            input_ids=input_ids,
-            pixel_values=pixel_values,
-            labels=target_ids,
-            return_dict=True
-        )
+        input_ids = torch.cat([input_ids_q, input_ids_a[:, :-1]], dim=-1)
+        labels = torch.cat([torch.full_like(input_ids_q, -100), input_ids_a], dim=-1)  # mask phần câu hỏi
 
-        # Cross-entropy loss is negative log likelihood
-        loss = outputs.loss
-        log_prob = -loss.item() * target_ids.size(1)
+        with torch.no_grad():
+            outputs = self.model(
+                input_ids=input_ids,
+                pixel_values=pixel_values,
+                labels=labels,
+                return_dict=True
+            )
 
-        return log_prob       
+        loss = outputs.loss 
+        total_log_prob = -loss.item() * input_ids_a.size(1)  # nhân số token answer
 
+        return total_log_prob
         
     
 def add_gaussian_noise(img, std=0.1):
