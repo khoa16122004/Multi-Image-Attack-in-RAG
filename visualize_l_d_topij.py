@@ -19,14 +19,13 @@ def main(args):
         "llava-one": "LLaVA-One.",
         "llava-next": "LLaVA-Next.",
         "deepseek-vl2-tiny": "DeepSeekVL2",
-        "itern-vl": "InternVL2.5",
         "qwenvl2.5": "Qwen2.5VL"
 
     }
 
 
-    n_k_list = [1, 2, 3]
-    colors = ['blue', 'green', 'red']
+    n_k_list = [1, 2, 3, 4, 5]
+    colors = ['blue', 'green', 'red', 'orange', 'purple']
     lines = [int(line.strip()) for line in open(args.sample_path, "r")]
 
     fig, ax = plt.subplots(2, len(models), figsize=(5 * len(models), 8))  # 2 hàng: retrieval + generation
