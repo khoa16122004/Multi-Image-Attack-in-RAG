@@ -95,12 +95,37 @@ class InternVL:
                                       self.generation_config, 
                                       return_history=True
                                       )
-        return response
+        return [response]
     
     def compute_log_prob(self, question, img_files, answer):
-       
-        pass
-        return prob
+        # Load image(s)
+        all_pixel_values = []
+        for path in img_files:
+            pixels = load_image(path, input_size=self.input_size)
+            all_pixel_values.append(pixels)
+        pixel_values = torch.cat(all_pixel_values, dim=0).to(self.dtype).to(self.device)
+
+        # Tokenize input question and target answer
+        input_ids = self.tokenizer(question, return_tensors="pt").input_ids.to(self.device)
+        target_ids = self.tokenizer(answer, return_tensors="pt").input_ids.to(self.device)
+
+        # Concatenate question and target answer for teacher-forcing
+        input_ids = torch.cat([input_ids, target_ids[:, :-1]], dim=-1)
+
+        # Forward pass (shifted labels to the right)
+        outputs = self.model(
+            input_ids=input_ids,
+            pixel_values=pixel_values,
+            labels=target_ids,
+            return_dict=True
+        )
+
+        # Cross-entropy loss is negative log likelihood
+        loss = outputs.loss
+        log_prob = -loss.item() * target_ids.size(1)
+
+        return log_prob       
+
         
     
 def add_gaussian_noise(img, std=0.1):
@@ -121,14 +146,14 @@ if __name__ == "__main__":
     lvlm = InternVL("InternVL2_5-8B")
     answer = lvlm(question, img_files)
     print(answer)
-    # p_clean = lvlm.compute_log_prob(question, img_files, answer[0])
+    p_clean = lvlm.compute_log_prob(question, img_files, answer[0])
 
     std = 0.05  
     noisy_imgs = [add_gaussian_noise(img, std=std) for img in img_files]
     [noisy_img.save(f"test_{i + 1}_noisy.jpg") for i, noisy_img in enumerate(noisy_imgs)]
     adv_answer = lvlm(question, noisy_imgs)
     print(adv_answer)
-    # p_adv = lvlm.compute_log_prob(question, noisy_imgs, adv_answer[0])
+    p_adv = lvlm.compute_log_prob(question, noisy_imgs, adv_answer[0])
     # print(p_adv, p_clean)
     # print(p_adv / p_clean)
     # print(math.exp(p_adv) / math.exp(p_clean))

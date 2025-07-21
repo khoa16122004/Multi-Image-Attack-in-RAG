@@ -1,0 +1,54 @@
+Llavaone:
+k = 1
+Mean clean_rate per top‑k position: [0.13]
+Mean clean mrrscore per top‑k position: [0.13]
+
+k=2
+Mean clean_rate per top‑k position: [0.205]
+Mean clean mrrscore per top‑k position: [0.23]
+
+k=3
+Mean clean_rate per top‑k position: [0.20999999999999988]
+Mean clean mrrscore per top‑k position: [0.2508333333333332]
+
+##### 
+LLava-next:
+k = 1
+Mean clean_rate per top‑k position: [0.19]
+Mean clean mrrscore per top‑k position: [0.19]
+
+k=2
+Mean clean_rate per top‑k position: [0.24]
+Mean clean mrrscore per top‑k position: [0.28]
+
+k=3
+Mean clean_rate per top‑k position: [0.22333333333333327]
+Mean clean mrrscore per top‑k position: [0.2708333333333332]
+
+######
+deepseek
+k = 1
+Mean clean_rate per top‑k position: [0.18]
+Mean clean mrrscore per top‑k position: [0.18]
+
+k = 2
+Mean clean_rate per top‑k position: [0.23]
+Mean clean mrrscore per top‑k position: [0.265]
+
+k = 3
+Mean clean_rate per top‑k position: [0.22999999999999982]
+Mean clean mrrscore per top‑k position: [0.26666666666666655]
+
+###
+ qwenvl2
+k=1
+Mean clean_rate per top‑k position: [0.14]
+Mean clean mrrscore per top‑k position: [0.14]
+
+k=2
+Mean clean_rate per top‑k position: [0.2]
+Mean clean mrrscore per top‑k position: [0.225]
+
+k=3
+Mean clean_rate per top‑k position: [0.20999999999999994]
+Mean clean mrrscore per top‑k position: [0.25083333333333324]

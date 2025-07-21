@@ -1,56 +1,35 @@
 import matplotlib.pyplot as plt
 
-positions = [1, 2, 3, 4, 5]
+topk = [1, 2, 3, 4, 5]
 
-clean_rate = {
-    1: [0.13, 0.515, 0.6733333333333326, 0.755, 0.7999999999999985],
-    2: [0.05, 0.205, 0.37999999999999984, 0.5175, 0.6100000000000009],
-    3: [0.04, 0.095, 0.20999999999999988, 0.32, 0.4299999999999994],
-    0: [1] * 5,
-}
+# Trung bình các mô hình
+avg_clean_rate = [0.0425, 0.1075, 0.218333, 0.321875, 0.4375]
+avg_mrr = [0.0425, 0.12875, 0.259291, 0.332465, 0.278691]
 
-mrr_score = {
-    1: [0.13, 0.5575, 0.44888888888888867, 0.3831944444444447, 0.33899999999999963],
-    2: [0.05, 0.23, 0.4100000000000001, 0.3386111111111114, 0.2948472222222225],
-    3: [0.04, 0.115, 0.2508333333333332, 0.3275, 0.2754722222222224],
-    0: [1] * 5,
-}
+# Không attack (baseline)
+ideal_clean_rate = [1, 2, 3, 4, 5]   # Nếu tính số ảnh sạch tìm được
+ideal_mrr = [1, 1+1/2, 1+1/2+1/3, 1+1/2+1/3+1/4, 1+1/2+1/3+1/4+1/5]
 
-colors = {
-    0: "black",
-    1: "blue",
-    2: "green",
-    3: "red"
-}
+# Plot
+plt.figure(figsize=(12, 5))
 
-labels = {
-    0: "k=0 (not poision)",
-    1: "Inject k=1",
-    2: "Inject k=2",
-    3: "Inject k=3"
-}
+plt.subplot(1, 2, 1)
+plt.plot(topk, avg_clean_rate, marker='o', label='Injected (average)', color='red')
+plt.plot(topk, ideal_clean_rate, marker='o', label='No attack (ideal)', color='green')
+plt.title("Clean Rate vs Top‑k")
+plt.xlabel("Top‑k")
+plt.ylabel("Clean Rate")
+plt.legend()
+plt.grid(True)
 
-fig, axs = plt.subplots(1, 2, figsize=(12, 5))
-
-# Plot Clean Rate
-for k in [0, 1, 2, 3]:
-    axs[0].plot(positions, clean_rate[k], label=labels[k], color=colors[k], marker="o")
-axs[0].set_title("Mean Clean Rate per Top-k Position")
-axs[0].set_xlabel("Top-k Position")
-axs[0].set_ylabel("Clean Rate")
-axs[0].set_xticks(positions)
-axs[0].legend()
-axs[0].grid(True)
-
-# Plot MRR Score
-for k in [0, 1, 2, 3]:
-    axs[1].plot(positions, mrr_score[k], label=labels[k], color=colors[k], marker="o")
-axs[1].set_title("Mean MRR Score per Top-k Position")
-axs[1].set_xlabel("Top-k Position")
-axs[1].set_ylabel("MRR Score")
-axs[1].set_xticks(positions)
-axs[1].legend()
-axs[1].grid(True)
+plt.subplot(1, 2, 2)
+plt.plot(topk, avg_mrr, marker='o', label='Injected (average)', color='red')
+plt.plot(topk, ideal_mrr, marker='o', label='No attack (ideal)', color='green')
+plt.title("MRR vs Top‑k")
+plt.xlabel("Top‑k")
+plt.ylabel("MRR Score")
+plt.legend()
+plt.grid(True)
 
 plt.tight_layout()
 plt.show()
