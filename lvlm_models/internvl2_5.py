@@ -123,10 +123,14 @@ class InternVL:
                 return_dict=True
             )
 
-            logits = outputs.logits
-            logits = logits[:, -labels.size(1):, :]  # cắt đúng chiều
+            logits = outputs.logits  # [1, seq_len, vocab_size]
+            # Làm khớp chiều logits và labels
+            min_len = min(logits.size(1), labels.size(1))
+            logits = logits[:, :min_len, :]
+            labels = labels[:, :min_len]
+
             loss_fct = torch.nn.CrossEntropyLoss(ignore_index=-100, reduction='none')
-            loss = loss_fct(logits.transpose(1, 2), labels)
+            loss = loss_fct(logits.transpose(1, 2), labels)  # [1, seq_len]
             avg_loss = loss[labels != -100].mean()
             total_log_prob = -avg_loss.item() * (labels != -100).sum().item()
 
