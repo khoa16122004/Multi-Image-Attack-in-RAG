@@ -14,7 +14,7 @@ def main(args):
     
     evaluator = VisualizerTopkResults(args)
     for sample_id in tqdm(sample_ids):
-        evaluator.visualize_topk(sample_id, mode=args.mode)
+        evaluator.visualize_topk(sample_id)
         # raise
 
 
