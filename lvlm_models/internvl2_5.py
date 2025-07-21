@@ -112,11 +112,13 @@ class InternVL:
 
         input_ids = torch.cat([input_ids_q, input_ids_a[:, :-1]], dim=-1)
         labels = torch.cat([torch.full_like(input_ids_q, -100), input_ids_a], dim=-1)  # mask phần câu hỏi
+        image_flags = torch.ones(pixel_values.shape[0], dtype=torch.bool, device=pixel_values.device).unsqueeze(-1)
 
         with torch.no_grad():
             outputs = self.model(
                 input_ids=input_ids,
                 pixel_values=pixel_values,
+                image_flags=image_flags,   # <- thêm dòng này
                 labels=labels,
                 return_dict=True
             )
