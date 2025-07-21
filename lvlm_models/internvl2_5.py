@@ -104,6 +104,8 @@ class InternVL:
             all_pixel_values.append(pixels)
         pixel_values = torch.cat(all_pixel_values, dim=0).to(self.dtype).to(self.device)
 
+        image_flags = torch.ones(pixel_values.shape[0], dtype=torch.bool, device=pixel_values.device).unsqueeze(-1)
+
         question_tokens = self.tokenizer(question, return_tensors="pt", add_special_tokens=False)
         answer_tokens = self.tokenizer(answer, return_tensors="pt", add_special_tokens=False)
 
@@ -111,20 +113,22 @@ class InternVL:
         input_ids_a = answer_tokens["input_ids"].to(self.device)
 
         input_ids = torch.cat([input_ids_q, input_ids_a[:, :-1]], dim=-1)
-        labels = torch.cat([torch.full_like(input_ids_q, -100), input_ids_a], dim=-1)  # mask phần câu hỏi
-        image_flags = torch.ones(pixel_values.shape[0], dtype=torch.bool, device=pixel_values.device).unsqueeze(-1)
+        labels = torch.cat([torch.full_like(input_ids_q, -100), input_ids_a], dim=-1)
 
         with torch.no_grad():
             outputs = self.model(
                 input_ids=input_ids,
                 pixel_values=pixel_values,
-                image_flags=image_flags,   # <- thêm dòng này
-                labels=labels,
+                image_flags=image_flags,
                 return_dict=True
             )
 
-        loss = outputs.loss 
-        total_log_prob = -loss.item() * input_ids_a.size(1)  # nhân số token answer
+            logits = outputs.logits
+            logits = logits[:, -labels.size(1):, :]  # cắt đúng chiều
+            loss_fct = torch.nn.CrossEntropyLoss(ignore_index=-100, reduction='none')
+            loss = loss_fct(logits.transpose(1, 2), labels)
+            avg_loss = loss[labels != -100].mean()
+            total_log_prob = -avg_loss.item() * (labels != -100).sum().item()
 
         return total_log_prob
         
