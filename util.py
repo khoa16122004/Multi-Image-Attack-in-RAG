@@ -524,7 +524,9 @@ class VisualizerTopkResults:
         answer_dict = {"question": question}
         for k in range(1, top_k + 1):
             pred_ans = self.reader.image_to_text(question, sorted_imgs[:k])[0]
-            answer_dict[f"top{k}_answer"] = pred_ans
+            original_ans = self.reader.image_to_text(question, retri_imgs[:k])[0]
+            answer_dict[f"top{k}_adv_answer"] = pred_ans
+            answer_dict[f"top{k}_ori_answer"] = original_ans
 
         with open(os.path.join(output_img_dir, "answers.json"), "w") as f:
             json.dump(answer_dict, f, indent=4)
