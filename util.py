@@ -473,7 +473,7 @@ class VisualizerTopkResults:
         self.attack_result_path = args.attack_result_path
         self.loader = DataLoader(retri_dir=args.result_clean_dir)
         self.init_llm(args.llm)
-        self.output_dir = f"visualize_figure_results_nk={self.n_k}_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}"
+        self.output_dir = f"visualize_figure_results_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}"
         os.makedirs(self.output_dir, exist_ok=True)
 
     def init_llm(self, model_name):
