@@ -305,10 +305,9 @@ class GA:
             P_reader_score = pool_reader_score[selected_indices]
             P = pool[selected_indices]
             P_adv_imgs = [pool_adv_imgs[i] for i in selected_indices]
-            P_retri_score, P_reader_score, P_adv_imgs = self.fitness(P)
             
             mean_pool_fitness = np.mean(np.column_stack((pool_retri_score, pool_reader_score)), axis=1)
-            best_idx_in_pool = np.argmax(mean_pool_fitness )
+            best_idx_in_pool = np.argmin(mean_pool_fitness )
 
             self.best_retri_score = pool_retri_score[best_idx_in_pool:best_idx_in_pool+1]
             self.best_reader_score = pool_reader_score[best_idx_in_pool:best_idx_in_pool+1]
@@ -367,7 +366,6 @@ class GA:
     def tournament_selection(self, pool_fitness): # 2 x 2N
         weighted_sum_fitness = np.mean(pool_fitness, axis=1) # 2N
         print(weighted_sum_fitness.shape)
-        raise
         idxs = np.arange(len(pool_fitness))
         selected_idxs = []
         for turn in range(2):
