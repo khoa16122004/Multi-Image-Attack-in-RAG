@@ -360,7 +360,7 @@ class GA:
     
     def tournament_selection(self, pool_fitness): # 2 x 2N
         weighted_sum_fitness = np.mean(pool_fitness, axis=1) # 2N
-        idxs = np.arrange(len(pool_fitness))
+        idxs = np.arange(len(pool_fitness))
         selected_idxs = []
         for turn in range(2):
             idxs_shuffle = np.shuffle(idxs)
