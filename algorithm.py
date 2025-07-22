@@ -312,7 +312,9 @@ class GA:
 
             self.best_retri_score = pool_retri_score[best_idx_in_pool:best_idx_in_pool+1]
             self.best_reader_score = pool_reader_score[best_idx_in_pool:best_idx_in_pool+1]
-           
+
+            print((self.best_reader_score + self.best_retri_score) / 2)
+            
             self.history.append(np.column_stack([P_retri_score, P_reader_score]))
             self.img_history.append(P_adv_imgs)
             
