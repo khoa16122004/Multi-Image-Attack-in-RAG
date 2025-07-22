@@ -5,7 +5,7 @@ from PIL import Image
 import argparse
 from util import DataLoader
 from fitness import MultiScore
-from algorithm import RandomAttack
+from algorithm import GA
 from tqdm import tqdm
 import json
 import pickle
