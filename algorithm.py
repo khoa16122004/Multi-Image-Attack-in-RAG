@@ -305,9 +305,13 @@ class GA:
             P_reader_score = pool_reader_score[selected_indices]
             P = pool[selected_indices]
             P_adv_imgs = [pool_adv_imgs[i] for i in selected_indices]
+            P_retri_score, P_reader_score, P_adv_imgs = self.fitness(P)
             
-            
-            
+            mean_pool_fitness = np.mean(np.column_stack((pool_retri_score, pool_reader_score)), axis=1)
+            best_idx_in_pool = np.argmax(mean_pool_fitness )
+
+            self.best_retri_score = pool_retri_score[best_idx_in_pool:best_idx_in_pool+1]
+            self.best_reader_score = pool_reader_score[best_idx_in_pool:best_idx_in_pool+1]
            
             self.history.append(np.column_stack([P_retri_score, P_reader_score]))
             self.img_history.append(P_adv_imgs)
@@ -363,12 +367,15 @@ class GA:
         idxs = np.arange(len(pool_fitness))
         selected_idxs = []
         for turn in range(2):
-            idxs_shuffle = np.shuffle(idxs)
-            fitness_shuffle = weight_sum_fitness[idxs]
+            idxs_shuffle = idxs.copy()
+            np.random.shuffle(idxs_shuffle)     
             for i in range(0, len(pool_fitness), 4):
-                current_fitness = pool_fitness[i : i + 4]
-                selected_id = i + np.argmin(current_fitness)
-                selected_idxs.append(idxs_shuffle[selected_id])
+                sub_idxs = idxs_shuffle[i : i + 4]
+                sub_fitness = weighted_sum_fitness[sub_idxs]
+                selected_idx = sub_idxs[np.argmin(sub_fitness)]
+                selected_idxs.append(selected_idx)
+        
+        
         
         return selected_idxs
 
