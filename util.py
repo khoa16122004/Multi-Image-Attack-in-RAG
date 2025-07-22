@@ -501,24 +501,36 @@ class VisualizerTopkResults:
 
         is_adv = [(i >= len(retri_imgs)) for i in sorted_indices[:top_k]]
 
-        # Plot top-k
-        fig, axes = plt.subplots(1, top_k, figsize=(3 * top_k, 3))
-        for i in range(top_k):
-            img = sorted_imgs[i]
-            ax = axes[i]
-            if isinstance(img, np.ndarray):
-                img = Image.fromarray((img * 255).astype(np.uint8)) if img.max() <= 1 else Image.fromarray(img.astype(np.uint8))
-            ax.imshow(img)
-            ax.axis("off")
-            ax.set_title(f"Rank {i+1}")
-            if is_adv[i]:
-                rect = patches.Rectangle((0, 0), img.width, img.height, linewidth=6, edgecolor='red', facecolor='none')
-                ax.add_patch(rect)
+        # # Plot top-k
+        # fig, axes = plt.subplots(1, top_k, figsize=(3 * top_k, 3))
+        # for i in range(top_k):
+        #     img = sorted_imgs[i]
+        #     ax = axes[i]
+        #     if isinstance(img, np.ndarray):
+        #         img = Image.fromarray((img * 255).astype(np.uint8)) if img.max() <= 1 else Image.fromarray(img.astype(np.uint8))
+        #     ax.imshow(img)
+        #     ax.axis("off")
+        #     ax.set_title(f"Rank {i+1}")
+        #     if is_adv[i]:
+        #         rect = patches.Rectangle((0, 0), img.width, img.height, linewidth=6, edgecolor='red', facecolor='none')
+        #         ax.add_patch(rect)
 
+        # output_img_dir = os.path.join(self.output_dir, str(sample_id), f"inject_{self.n_k}")
+        # os.makedirs(output_img_dir, exist_ok=True)
+        # fig.savefig(os.path.join(output_img_dir, f"top{top_k}_visualize.png"))
+        # plt.close()
+        
         output_img_dir = os.path.join(self.output_dir, str(sample_id), f"inject_{self.n_k}")
         os.makedirs(output_img_dir, exist_ok=True)
-        fig.savefig(os.path.join(output_img_dir, f"top{top_k}_visualize.png"))
-        plt.close()
+
+        for i in range(top_k):
+            img = sorted_imgs[i]
+            if isinstance(img, np.ndarray):
+                img = Image.fromarray((img * 255).astype(np.uint8)) if img.max() <= 1 else Image.fromarray(img.astype(np.uint8))
+            label = "adv" if is_adv[i] else "clean"
+            img.save(os.path.join(output_img_dir, f"rank_{i+1}_{label}.png"))
+
+        
 
         # Generate answers with increasing top-k
         answer_dict = {"question": question}
