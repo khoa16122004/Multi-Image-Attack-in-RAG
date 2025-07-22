@@ -47,7 +47,7 @@ def main(args):
         
         # algorithm
         algorithm = GA(
-            populattion_size=args.pop_size,
+            population_size=args.pop_size,
             mutation_rate=args.max_iter,
             F=args.F,
             w=args.w,
