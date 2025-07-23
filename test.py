@@ -1,35 +1,75 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
-topk = [1, 2, 3, 4, 5]
+# Thiết lập font
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
+plt.rcParams['font.family'] = 'DejaVu Sans'
+plt.rc('legend', fontsize=14)
+plt.rc('xtick', labelsize=12)
+plt.rc('ytick', labelsize=12)
+plt.rc('axes', labelsize=16)
 
-# Trung bình các mô hình
-avg_clean_rate = [0.0425, 0.1075, 0.218333, 0.321875, 0.4375]
-avg_mrr = [0.0425, 0.12875, 0.259291, 0.332465, 0.278691]
+# Dữ liệu
+llava_one = [
+    [0.64, 0.69, 0.775, 0.74, 0.795],
+    [0.625, 0.685, 0.73, 0.71, 0.715],
+    [0.57, 0.635, 0.6383, 0.65, 0.675],
+    [0.575, 0.615, 0.625, 0.645, 0.665],
+    [0.57, 0.605, 0.625, 0.64, 0.66],
+]
 
-# Không attack (baseline)
-ideal_clean_rate = [1, 2, 3, 4, 5]   # Nếu tính số ảnh sạch tìm được
-ideal_mrr = [1, 1+1/2, 1+1/2+1/3, 1+1/2+1/3+1/4, 1+1/2+1/3+1/4+1/5]
+llava_next = [
+    [0.71, 0.665, 0.69, 0.795, 0.73],
+    [0.675, 0.65, 0.7, 0.705, 0.725],
+    [0.6, 0.585, 0.645, 0.705, 0.77],
+    [0.615, 0.565, 0.61, 0.65, 0.765],
+    [0.625, 0.6, 0.6, 0.63, 0.745],
+]
 
-# Plot
-plt.figure(figsize=(12, 5))
+qwenvl2 = [
+    [0.925, 0.805, 0.775, 0.865, 0.87],
+    [0.86, 0.865, 0.785, 0.78, 0.85],
+    [0.83, 0.81, 0.87, 0.855, 0.85],
+    [0.785, 0.795, 0.845, 0.865, 0.815],
+    [0.775, 0.775, 0.835, 0.86, 0.85],
+]
 
-plt.subplot(1, 2, 1)
-plt.plot(topk, avg_clean_rate, marker='o', label='Injected (average)', color='red')
-plt.plot(topk, ideal_clean_rate, marker='o', label='No attack (ideal)', color='green')
-plt.title("Clean Rate vs Top‑k")
-plt.xlabel("Top‑k")
-plt.ylabel("Clean Rate")
-plt.legend()
-plt.grid(True)
+mean_llava_one = np.mean(llava_one, axis=1)
+mean_llava_next = np.mean(llava_next, axis=1)
+mean_qwenvl2 = np.mean(qwenvl2, axis=1)
 
-plt.subplot(1, 2, 2)
-plt.plot(topk, avg_mrr, marker='o', label='Injected (average)', color='red')
-plt.plot(topk, ideal_mrr, marker='o', label='No attack (ideal)', color='green')
-plt.title("MRR vs Top‑k")
-plt.xlabel("Top‑k")
-plt.ylabel("MRR Score")
-plt.legend()
-plt.grid(True)
+injects = [1, 2, 3, 4, 5]
 
+# Hàm vẽ đường + text tự động offset
+def plot_with_values(x, y, label, color, marker, linestyle, text_offset=0.015, decimal=4):
+    plt.plot(x, y, marker=marker, linestyle=linestyle, linewidth=2, markersize=8, color=color, label=label)
+    
+    for xi, yi in zip(x, y):
+        va = 'bottom' if text_offset > 0 else 'top'
+        plt.text(
+            xi, yi + text_offset, f'{yi:.{decimal}f}',
+            ha='center', va=va,
+            fontsize=9, color=color,
+            fontweight='bold',
+            bbox=dict(facecolor='white', edgecolor='gray', alpha=0.6, boxstyle='round,pad=0.25')
+        )
+
+# Vẽ biểu đồ
+plt.figure(figsize=(10, 6))
+
+plot_with_values(injects, mean_llava_one, 'LLaVA-One', '#1f77b4', 'o', '-', text_offset=0.018)
+plot_with_values(injects, mean_llava_next, 'LLaVA-Next', '#ff7f0e', 's', '--', text_offset=0.035)
+plot_with_values(injects, mean_qwenvl2, 'Qwen-VL-2', '#2ca02c', '^', '-.', text_offset=-0.035)
+
+# Trang trí
+plt.xlabel('Number of Positioning Images', fontsize=14)
+plt.ylabel('Mean End-to-End Score across Top-k', fontsize=14)
+plt.title('Visual RAG Performance across different number of adversarial Images inject to the database', fontsize=16, pad=15)
+plt.legend(frameon=True, loc='lower right')
+plt.grid(True, linestyle='--', alpha=0.6)
+plt.xticks(injects)
+plt.ylim(0.55, 0.95)
 plt.tight_layout()
+
 plt.show()
