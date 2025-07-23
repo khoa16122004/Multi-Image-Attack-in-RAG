@@ -64,7 +64,7 @@ def main(args):
 
                 # Chỉ lấy mỗi 5 step
                 steps = np.arange(len(mean_score_0))
-                sampled_indices = steps[::5]
+                sampled_indices = steps[::20]
                 ax[0][col].plot(sampled_indices, mean_score_0[sampled_indices], 
                                label=method_name, color=colors[method_name], 
                                linestyle=linestyles[method_name], marker=markers[method_name], 
