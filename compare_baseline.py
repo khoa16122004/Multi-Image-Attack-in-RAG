@@ -5,13 +5,12 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from util import arkiv_proccess
-import matplotlib
-matplotlib.rcParams['pdf.fonttype'] = 42
-matplotlib.rcParams['ps.fonttype'] = 42
-plt.rc('legend', fontsize=14)
-plt.rc('xtick', labelsize=14)
-plt.rc('ytick', labelsize=14)
-plt.rc('axes', labelsize=20)
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
+plt.rc('legend', fontsize=25)  # Giảm từ 25 xuống 20
+plt.rc('xtick', labelsize=25)  # Giảm từ 25 xuống 20
+plt.rc('ytick', labelsize=25)  # Giảm từ 25 xuống 20
+plt.rc('axes', labelsize=24)   # Giảm từ 30 xuống 24
 
 
 def main(args):
