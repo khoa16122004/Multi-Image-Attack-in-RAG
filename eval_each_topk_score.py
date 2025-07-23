@@ -14,9 +14,12 @@ def main(args):
                 args.extracted_path, sample_id,
                 f"inject_{args.n_k}", f"answers_{k+1}.json"
             )
-            with open(score_file) as f:
-                totals[k] += json.load(f)["parse_score"]
-
+            try:
+                with open(score_file) as f:
+                    totals[k] += json.load(f)["parse_score"]
+            except:
+                print(f"File not found: {score_file}")
+                raise
     means = (totals / len(sample_list)).tolist()
     print("Mean parse_score per top‑k position:", means)
 

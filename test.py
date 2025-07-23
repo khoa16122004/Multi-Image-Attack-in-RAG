@@ -4,11 +4,10 @@ import numpy as np
 # Thiết lập font
 plt.rcParams['pdf.fonttype'] = 42
 plt.rcParams['ps.fonttype'] = 42
-plt.rcParams['font.family'] = 'DejaVu Sans'
-plt.rc('legend', fontsize=14)
-plt.rc('xtick', labelsize=14)
-plt.rc('ytick', labelsize=14)
-plt.rc('axes', labelsize=20)
+plt.rc('legend', fontsize=25)  # Giảm từ 25 xuống 20
+plt.rc('xtick', labelsize=25)  # Giảm từ 25 xuống 20
+plt.rc('ytick', labelsize=25)  # Giảm từ 25 xuống 20
+plt.rc('axes', labelsize=24)   # Giảm từ 30 xuống 24
 
 # Dữ liệu
 llava_one = [
@@ -43,33 +42,35 @@ injects = [1, 2, 3, 4, 5]
 
 # Hàm vẽ đường + text theo màu của line
 def plot_with_values(x, y, label, color, marker, linestyle, text_offset=0.015, decimal=4):
-    plt.plot(x, y, marker=marker, linestyle=linestyle, linewidth=2, markersize=8, color=color, label=label)
+    plt.plot(x, y, marker=marker, linestyle=linestyle, linewidth=3, markersize=10, color=color, label=label)
     for xi, yi in zip(x, y):
         va = 'bottom' if text_offset > 0 else 'top'
         plt.text(
             xi, yi + text_offset, f'{yi:.{decimal}f}',
             ha='center', va=va,
-            fontsize=9, color=color,
+            fontsize=10, color=color,  # Tăng từ 9 lên 10
             fontweight='bold',
-            bbox=dict(facecolor='white', edgecolor='gray', alpha=0.6, boxstyle='round,pad=0.25')
+            bbox=dict(facecolor='white', edgecolor='gray', alpha=0.7, boxstyle='round,pad=0.3')
         )
 
-# Vẽ biểu đồ
-plt.figure(figsize=(10, 6))
+# Vẽ biểu đồ với chiều ngang thu hẹp
+plt.figure(figsize=(7, 6))  # Giảm từ (10, 6) xuống (7, 6)
 
 plot_with_values(injects, mean_llava_one, 'LLaVA-One', '#b30000', 'o', '-', text_offset=0.018)
 plot_with_values(injects, mean_llava_next, 'LLaVA-Next', '#004c6d', 's', '--', text_offset=0.035)
 plot_with_values(injects, mean_qwenvl2, 'Qwen-VL-2', '#3f007d', '^', '-.', text_offset=-0.035)
 
 # Trang trí
-plt.xlabel('Number of Positioning Images', fontsize=14)
-plt.ylabel('Mean End-to-End Score across Top-k', fontsize=14)
+plt.xlabel('Number of Positioning Images', fontsize=16)  # Tăng từ 14 lên 16
+plt.ylabel('Mean End-to-End Score across Top-k', fontsize=16)  # Tăng từ 14 lên 16
 plt.grid(True, linestyle='--', alpha=0.6)
 plt.xticks(injects)
 plt.ylim(0.55, 0.95)
 
-# Legend ở góc trái dưới trong biểu đồ
-plt.legend(frameon=True, loc='lower left')
+# Legend với font size phù hợp
+plt.legend(frameon=True, loc='lower left', fontsize=16)
 plt.tight_layout()
 
-plt.show()
+# plt.show()
+save_path = f"visualization/std{0.05}_number_injection.pdf"
+plt.savefig(save_path, dpi=300, bbox_inches='tight')  # Thêm bbox_inches='tight' để tối ưu hóa
