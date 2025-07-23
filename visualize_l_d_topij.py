@@ -184,9 +184,9 @@ def main(args):
 
         # Legend đẹp giống như trong hình mẫu
         ax[0][col].legend(loc='upper right', frameon=True, fancybox=True, shadow=True, 
-                         facecolor='white', framealpha=0.9)
+                         facecolor='white', framealpha=0.5)
         ax[1][col].legend(loc='upper right', frameon=True, fancybox=True, shadow=True,
-                         facecolor='white', framealpha=0.9)
+                         facecolor='white', framealpha=0.5)
         # Auto y-lim
         if len(ax[0][col].lines) > 0:
             all_y_0 = np.concatenate([line.get_ydata() for line in ax[0][col].lines])

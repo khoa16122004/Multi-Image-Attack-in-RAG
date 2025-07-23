@@ -71,14 +71,14 @@ plot_with_values(injects, mean_qwenvl2, 'Qwen2.5VL', '#3f007d', '^', '-.', text_
 plot_with_values(injects, mean_deepseekvl2, 'DeepseekVL2',   '#8c564b', 'D',  ':',  text_offset=-0.035)
 
 # Trang trí
-plt.xlabel('Number of Positioning Images', fontsize=16)  # Tăng từ 14 lên 16
+plt.xlabel('Number of Adversarial Images', fontsize=16)  # Tăng từ 14 lên 16
 plt.ylabel('Mean End-to-End Score across Top-k', fontsize=16)  # Tăng từ 14 lên 16
 plt.grid(True, linestyle='--', alpha=0.6)
 plt.xticks(injects)
 plt.ylim(0.55, 0.95)
 
 # Legend với font size phù hợp
-plt.legend(frameon=True, loc='lower left', fontsize=16)
+plt.legend(frameon=True, loc='upper right', fontsize=16)
 plt.tight_layout()
 
 # plt.show()
