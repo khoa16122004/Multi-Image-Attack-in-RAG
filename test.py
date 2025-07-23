@@ -34,9 +34,18 @@ qwenvl2 = [
     [0.775, 0.775, 0.835, 0.86, 0.85],
 ]
 
+deepseek_vl2 = [
+    [0.75, 0.705, 0.75, 0.8, 0.77],
+    [0.625, 0.725, 0.715, 0.69, 0.75],
+    [0.61, 0.665, 0.685, 0.7, 0.715],
+    [0.635, 0.615, 0.635, 0.7, 0.695],
+    [0.62, 0.625, 0.63, 0.695, 0.665]
+]
+
 mean_llava_one = np.mean(llava_one, axis=1)
 mean_llava_next = np.mean(llava_next, axis=1)
 mean_qwenvl2 = np.mean(qwenvl2, axis=1)
+mean_deepseekvl2 = np.mean(deepseek_vl2, axis=1)
 
 injects = [1, 2, 3, 4, 5]
 
@@ -56,9 +65,10 @@ def plot_with_values(x, y, label, color, marker, linestyle, text_offset=0.015, d
 # Vẽ biểu đồ với chiều ngang thu hẹp
 plt.figure(figsize=(7, 6))  # Giảm từ (10, 6) xuống (7, 6)
 
-plot_with_values(injects, mean_llava_one, 'LLaVA-One', '#b30000', 'o', '-', text_offset=0.018)
-plot_with_values(injects, mean_llava_next, 'LLaVA-Next', '#004c6d', 's', '--', text_offset=0.035)
-plot_with_values(injects, mean_qwenvl2, 'Qwen-VL-2', '#3f007d', '^', '-.', text_offset=-0.035)
+plot_with_values(injects, mean_llava_one, 'LLaVA-One.', '#b30000', 'o', '-', text_offset=0.018)
+plot_with_values(injects, mean_llava_next, 'LLaVA-Next.', '#004c6d', 's', '--', text_offset=0.035)
+plot_with_values(injects, mean_qwenvl2, 'Qwen2.5VL', '#3f007d', '^', '-.', text_offset=-0.035)
+plot_with_values(injects, mean_deepseekvl2, 'DeepseekVL2',   '#8c564b', 'D',  ':',  text_offset=-0.035)
 
 # Trang trí
 plt.xlabel('Number of Positioning Images', fontsize=16)  # Tăng từ 14 lên 16
