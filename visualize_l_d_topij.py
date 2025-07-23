@@ -4,14 +4,33 @@ import pickle
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-from util import arkiv_proccess
 import matplotlib
-matplotlib.rcParams['pdf.fonttype'] = 42
-matplotlib.rcParams['ps.fonttype'] = 42
-plt.rc('legend', fontsize=18)
-plt.rc('xtick', labelsize=14)
-plt.rc('ytick', labelsize=14)
-plt.rc('axes', labelsize=20)
+from util import arkiv_proccess
+
+# Theme: Clean, white background, bold fonts, inwards ticks, minimalistic look
+matplotlib.rcParams.update({
+    'axes.edgecolor': 'black',
+    'axes.linewidth': 1.0,
+    'axes.grid': False,
+    'axes.facecolor': 'white',
+    'figure.facecolor': 'white',
+    'font.size': 14,
+    'font.family': 'DejaVu Sans',
+    'legend.frameon': True,
+    'legend.framealpha': 0.9,
+    'legend.fancybox': True,
+    'legend.edgecolor': 'gray',
+    'legend.loc': 'lower right',
+    'xtick.direction': 'in',
+    'ytick.direction': 'in',
+    'xtick.labelsize': 14,
+    'ytick.labelsize': 14,
+    'axes.labelsize': 20,
+    'pdf.fonttype': 42,
+    'ps.fonttype': 42,
+})
+
+plt.rc('legend', fontsize=14)
 
 
 def main(args):
@@ -20,15 +39,13 @@ def main(args):
         "llava-next": "LLaVA-Next.",
         "deepseek-vl2-tiny": "DeepSeekVL2",
         "qwenvl2.5": "Qwen2.5VL"
-
     }
-
 
     n_k_list = [1, 2, 3, 4, 5]
     colors = ['blue', 'green', 'red', 'orange', 'purple']
     lines = [int(line.strip()) for line in open(args.sample_path, "r")]
 
-    fig, ax = plt.subplots(2, len(models), figsize=(5 * len(models), 8))  # 2 hàng: retrieval + generation
+    fig, ax = plt.subplots(2, len(models), figsize=(5 * len(models), 8))
 
     for col, model_name in enumerate(models):
         model_result_dir = os.path.join(args.attack_result_dir, f"clip_{model_name}_{args.std}")
@@ -55,27 +72,32 @@ def main(args):
                 mean_score_0 = np.mean(full_score_0, axis=0)
                 mean_score_1 = np.mean(full_score_1, axis=0)
 
-                ax[0][col].plot(mean_score_0, label=f"top_k={n_k}", color=colors[idx_nk])
-                ax[1][col].plot(mean_score_1, label=f"top_k={n_k}", color=colors[idx_nk])
+                ax[0][col].plot(mean_score_0, label=f"top_k={n_k}",
+                                color=colors[idx_nk], marker='o', markersize=4, linewidth=2)
+                ax[1][col].plot(mean_score_1, label=f"top_k={n_k}",
+                                color=colors[idx_nk], marker='s', markersize=4, linewidth=2)
 
             except FileNotFoundError:
                 print(f"⚠️  Missing data for model={model_name}, n_k={n_k}. Skipping.")
                 continue
 
-        # Set titles and labels
         ax[0][col].set_title(f"{models[model_name]}", fontsize=16)
         ax[1][col].set_title(f"{models[model_name]}", fontsize=16)
         ax[0][col].set_xlabel("Generation Step")
         ax[1][col].set_xlabel("Generation Step")
         ax[0][col].set_ylabel("Retrieval Error score")
         ax[1][col].set_ylabel("Generation Error score")
+
         ax[0][col].legend()
         ax[1][col].legend()
 
-        # Auto y-lim per subplot
+        # Clean spines (only keep left and bottom)
+        for axis in [ax[0][col], ax[1][col]]:
+            axis.spines['top'].set_visible(False)
+            axis.spines['right'].set_visible(False)
+
         if len(ax[0][col].lines) > 0:
             all_y_0 = np.concatenate([line.get_ydata() for line in ax[0][col].lines])
-            # ymin_0, ymax_0 = all_y_0.min() - 0.02, all_y_0.max() + 0.1
             ax[0][col].set_ylim(0.97, 1.02)
 
         if len(ax[1][col].lines) > 0:
@@ -96,5 +118,4 @@ if __name__ == "__main__":
     parser.add_argument("--std", type=float, default=0.1, help="Standard deviation for initialization")
     parser.add_argument("--attack_result_dir", type=str, required=True)
     args = parser.parse_args()
-
     main(args)
