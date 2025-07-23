@@ -8,7 +8,7 @@ from util import arkiv_proccess
 import matplotlib
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
-plt.rc('legend', fontsize=18)
+plt.rc('legend', fontsize=14)
 plt.rc('xtick', labelsize=14)
 plt.rc('ytick', labelsize=14)
 plt.rc('axes', labelsize=20)
@@ -20,15 +20,13 @@ def main(args):
         "llava-next": "LLaVA-Next.",
         "deepseek-vl2-tiny": "DeepSeekVL2",
         "qwenvl2.5": "Qwen2.5VL"
-
     }
-
 
     n_k_list = [1, 2, 3, 4, 5]
     colors = ['blue', 'green', 'red', 'orange', 'purple']
     lines = [int(line.strip()) for line in open(args.sample_path, "r")]
 
-    fig, ax = plt.subplots(2, len(models), figsize=(5 * len(models), 8))  # 2 hàng: retrieval + generation
+    fig, ax = plt.subplots(2, len(models), figsize=(5 * len(models), 8))
 
     for col, model_name in enumerate(models):
         model_result_dir = os.path.join(args.attack_result_dir, f"clip_{model_name}_{args.std}")
@@ -55,15 +53,16 @@ def main(args):
                 mean_score_0 = np.mean(full_score_0, axis=0)
                 mean_score_1 = np.mean(full_score_1, axis=0)
 
-                ax[0][col].plot(mean_score_0, label=f"top_k={n_k}", color=colors[idx_nk])
-                ax[1][col].plot(mean_score_1, label=f"top_k={n_k}", color=colors[idx_nk])
+                # Chỉ lấy mỗi 5 step
+                steps = np.arange(len(mean_score_0))
+                sampled_indices = steps[::5]
+                ax[0][col].plot(sampled_indices, mean_score_0[sampled_indices], label=f"top_k={n_k}", color=colors[idx_nk])
+                ax[1][col].plot(sampled_indices, mean_score_1[sampled_indices], label=f"top_k={n_k}", color=colors[idx_nk])
 
             except FileNotFoundError:
                 print(f"⚠️  Missing data for model={model_name}, n_k={n_k}. Skipping.")
                 continue
 
-        # Set titles and labels
-        # Set titles and labels
         ax[0][col].set_title(f"{models[model_name]}", fontsize=16)
         ax[1][col].set_title(f"{models[model_name]}", fontsize=16)
         ax[0][col].set_xlabel("Generation Step")
@@ -71,18 +70,9 @@ def main(args):
         ax[0][col].set_ylabel("Retrieval Error score")
         ax[1][col].set_ylabel("Generation Error score")
 
-        # ✅ Chuyển legend ra ngoài biểu đồ
-        ax[0][col].legend(loc='center left', bbox_to_anchor=(1.0, 0.5), fontsize=12)
-        ax[1][col].legend(loc='center left', bbox_to_anchor=(1.0, 0.5), fontsize=12)
-
-        # ✅ Set xticks cách nhau 5 đơn vị
-        if ax[0][col].lines:
-            max_len = len(ax[0][col].lines[0].get_xdata())
-            ax[0][col].set_xticks(np.arange(0, max_len, 5))
-
-        if ax[1][col].lines:
-            max_len = len(ax[1][col].lines[0].get_xdata())
-            ax[1][col].set_xticks(np.arange(0, max_len, 5))
+        # Legend bên trái
+        ax[0][col].legend(loc='upper left', bbox_to_anchor=(-0.05, 1.0))
+        ax[1][col].legend(loc='upper left', bbox_to_anchor=(-0.05, 1.0))
 
         # Auto y-lim
         if len(ax[0][col].lines) > 0:
@@ -94,9 +84,7 @@ def main(args):
             ymin_1, ymax_1 = all_y_1.min() - 0.01, all_y_1.max() + 0.1
             ax[1][col].set_ylim(max(ymin_1, 0), min(ymax_1, 1))
 
-# Cuối cùng chỉnh lại layout để không bị cắt legend
-    plt.tight_layout(rect=[0, 0, 0.95, 1])
-
+    plt.tight_layout()
     os.makedirs("figure_visuattack_plot_std", exist_ok=True)
     save_path = f"figure_visuattack_plot_std/std{args.std}_by_metric.pdf"
     plt.savefig(save_path, dpi=300)

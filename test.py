@@ -6,9 +6,9 @@ plt.rcParams['pdf.fonttype'] = 42
 plt.rcParams['ps.fonttype'] = 42
 plt.rcParams['font.family'] = 'DejaVu Sans'
 plt.rc('legend', fontsize=14)
-plt.rc('xtick', labelsize=12)
-plt.rc('ytick', labelsize=12)
-plt.rc('axes', labelsize=16)
+plt.rc('xtick', labelsize=14)
+plt.rc('ytick', labelsize=14)
+plt.rc('axes', labelsize=20)
 
 # Dữ liệu
 llava_one = [
@@ -41,10 +41,9 @@ mean_qwenvl2 = np.mean(qwenvl2, axis=1)
 
 injects = [1, 2, 3, 4, 5]
 
-# Hàm vẽ đường + text tự động offset
+# Hàm vẽ đường + text theo màu của line
 def plot_with_values(x, y, label, color, marker, linestyle, text_offset=0.015, decimal=4):
     plt.plot(x, y, marker=marker, linestyle=linestyle, linewidth=2, markersize=8, color=color, label=label)
-    
     for xi, yi in zip(x, y):
         va = 'bottom' if text_offset > 0 else 'top'
         plt.text(
@@ -58,18 +57,19 @@ def plot_with_values(x, y, label, color, marker, linestyle, text_offset=0.015, d
 # Vẽ biểu đồ
 plt.figure(figsize=(10, 6))
 
-plot_with_values(injects, mean_llava_one, 'LLaVA-One', '#1f77b4', 'o', '-', text_offset=0.018)
-plot_with_values(injects, mean_llava_next, 'LLaVA-Next', '#ff7f0e', 's', '--', text_offset=0.035)
-plot_with_values(injects, mean_qwenvl2, 'Qwen-VL-2', '#2ca02c', '^', '-.', text_offset=-0.035)
+plot_with_values(injects, mean_llava_one, 'LLaVA-One', '#b30000', 'o', '-', text_offset=0.018)
+plot_with_values(injects, mean_llava_next, 'LLaVA-Next', '#004c6d', 's', '--', text_offset=0.035)
+plot_with_values(injects, mean_qwenvl2, 'Qwen-VL-2', '#3f007d', '^', '-.', text_offset=-0.035)
 
 # Trang trí
 plt.xlabel('Number of Positioning Images', fontsize=14)
 plt.ylabel('Mean End-to-End Score across Top-k', fontsize=14)
-plt.title('Visual RAG Performance across different number of adversarial Images inject to the database', fontsize=16, pad=15)
-plt.legend(frameon=True, loc='lower right')
 plt.grid(True, linestyle='--', alpha=0.6)
 plt.xticks(injects)
 plt.ylim(0.55, 0.95)
+
+# Legend ở góc trái dưới trong biểu đồ
+plt.legend(frameon=True, loc='lower left')
 plt.tight_layout()
 
 plt.show()
