@@ -5,12 +5,13 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from util import arkiv_proccess
-plt.rcParams['pdf.fonttype'] = 42
-plt.rcParams['ps.fonttype'] = 42
-plt.rc('legend', fontsize=25)  # Giảm từ 25 xuống 20
-plt.rc('xtick', labelsize=25)  # Giảm từ 25 xuống 20
-plt.rc('ytick', labelsize=25)  # Giảm từ 25 xuống 20
-plt.rc('axes', labelsize=24)   # Giảm từ 30 xuống 24
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+plt.rc('legend', fontsize=14)
+plt.rc('xtick', labelsize=14)
+plt.rc('ytick', labelsize=14)
+plt.rc('axes', labelsize=20)
 
 
 def main(args):
@@ -51,8 +52,6 @@ def main(args):
                         scores = pickle.load(f)
                         scores = arkiv_proccess(scores)
                         scores = [np.array(gen) for gen in scores]
-                        # print(scores[0].shape)
-                        print(path)
                         min_scores_0 = [np.min(gen[:, 0]) for gen in scores]
                         min_scores_1 = [np.min(gen[:, 1]) for gen in scores]
                         full_score_0.append(min_scores_0)
@@ -66,7 +65,7 @@ def main(args):
 
                 # Chỉ lấy mỗi 5 step
                 steps = np.arange(len(mean_score_0))
-                sampled_indices = steps[::20]
+                sampled_indices = steps[::5]
                 ax[0][col].plot(sampled_indices, mean_score_0[sampled_indices], 
                                label=method_name, color=colors[method_name], 
                                linestyle=linestyles[method_name], marker=markers[method_name], 
