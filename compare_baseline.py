@@ -24,6 +24,8 @@ def main(args):
 
     n_k = 1
     colors = {'baseline': 'blue', 'nsga-ii': 'red'}
+    linestyles = {'baseline': '--', 'nsga-ii': '-'}
+    markers = {'baseline': 's', 'nsga-ii': 'o'}
     lines = [int(line.strip()) for line in open(args.sample_path, "r")]
 
     fig, ax = plt.subplots(2, len(models), figsize=(5 * len(models), 8))
@@ -65,9 +67,13 @@ def main(args):
                 steps = np.arange(len(mean_score_0))
                 sampled_indices = steps[::5]
                 ax[0][col].plot(sampled_indices, mean_score_0[sampled_indices], 
-                               label=method_name, color=colors[method_name])
+                               label=method_name, color=colors[method_name], 
+                               linestyle=linestyles[method_name], marker=markers[method_name], 
+                               linewidth=2, markersize=6)
                 ax[1][col].plot(sampled_indices, mean_score_1[sampled_indices], 
-                               label=method_name, color=colors[method_name])
+                               label=method_name, color=colors[method_name],
+                               linestyle=linestyles[method_name], marker=markers[method_name], 
+                               linewidth=2, markersize=6)
 
             except FileNotFoundError:
                 print(f"⚠️  Missing data for model={model_name}, method={method_name}. Skipping.")
@@ -80,9 +86,9 @@ def main(args):
         ax[0][col].set_ylabel("Retrieval Error score")
         ax[1][col].set_ylabel("Generation Error score")
 
-        # Legend
-        ax[0][col].legend(loc='upper left')
-        ax[1][col].legend(loc='upper left')
+        # Legend giống như trong hình mẫu
+        ax[0][col].legend(loc='upper right', frameon=True, fancybox=True, shadow=True)
+        ax[1][col].legend(loc='upper right', frameon=True, fancybox=True, shadow=True)
 
         # Auto y-lim
         if len(ax[0][col].lines) > 0:
