@@ -49,38 +49,111 @@ mean_deepseekvl2 = np.mean(deepseek_vl2, axis=1)
 
 injects = [1, 2, 3, 4, 5]
 
-# Hàm vẽ đường + text theo màu của line
-def plot_with_values(x, y, label, color, marker, linestyle, text_offset=0.015, decimal=4):
-    plt.plot(x, y, marker=marker, linestyle=linestyle, linewidth=3, markersize=10, color=color, label=label)
-    for xi, yi in zip(x, y):
-        va = 'bottom' if text_offset > 0 else 'top'
-        plt.text(
-            xi, yi + text_offset, f'{yi:.{decimal}f}',
-            ha='center', va=va,
-            fontsize=10, color=color,  # Tăng từ 9 lên 10
-            fontweight='bold',
-            bbox=dict(facecolor='white', edgecolor='gray', alpha=0.7, boxstyle='round,pad=0.3')
-        )
-
 # Vẽ biểu đồ với chiều ngang thu hẹp
-plt.figure(figsize=(7, 6))  # Giảm từ (10, 6) xuống (7, 6)
+plt.figure(figsize=(7, 6))
 
-plot_with_values(injects, mean_llava_one, 'LLaVA-One.', '#b30000', 'o', '-', text_offset=0.018)
-plot_with_values(injects, mean_llava_next, 'LLaVA-Next.', '#004c6d', 's', '--', text_offset=0.035)
-plot_with_values(injects, mean_qwenvl2, 'Qwen2.5VL', '#3f007d', '^', '-.', text_offset=-0.035)
-plot_with_values(injects, mean_deepseekvl2, 'DeepseekVL2',   '#8c564b', 'D',  ':',  text_offset=-0.035)
+# Vẽ các đường
+plt.plot(injects, mean_llava_one, marker='o', linestyle='-', linewidth=3, markersize=10, color='#b30000', label='LLaVA-One.')
+plt.plot(injects, mean_llava_next, marker='s', linestyle='--', linewidth=3, markersize=10, color='#004c6d', label='LLaVA-Next.')
+plt.plot(injects, mean_qwenvl2, marker='^', linestyle='-.', linewidth=3, markersize=10, color='#3f007d', label='Qwen2.5VL')
+plt.plot(injects, mean_deepseekvl2, marker='D', linestyle=':', linewidth=3, markersize=10, color='#8c564b', label='DeepseekVL2')
+
+# Thêm text với vị trí được sắp xếp hợp lý
+for i, x in enumerate(injects):
+    # Lấy giá trị của tất cả các model tại điểm x
+    values = [
+        (mean_qwenvl2[i], 'Qwen2.5VL', '#3f007d'),
+        (mean_deepseekvl2[i], 'DeepseekVL2', '#8c564b'),
+        (mean_llava_one[i], 'LLaVA-One.', '#b30000'),
+        (mean_llava_next[i], 'LLaVA-Next.', '#004c6d')
+    ]
+    
+    # Đặt text cho từng model với vị trí tùy chỉnh
+    for value, model_name, color in values:
+        if model_name == 'Qwen2.5VL':
+            # Qwen luôn ở phía trên
+            plt.text(
+                x, value + 0.015, f'{value:.4f}',
+                ha='center', va='bottom',
+                fontsize=10, color=color, fontweight='bold',
+                bbox=dict(facecolor='white', edgecolor='gray', alpha=0.7, boxstyle='round,pad=0.3')
+            )
+        elif model_name == 'DeepseekVL2':
+            # Deepseek ở phía trên (thấp hơn Qwen một chút)
+            plt.text(
+                x, value + 0.008, f'{value:.4f}',
+                ha='center', va='bottom',
+                fontsize=10, color=color, fontweight='bold',
+                bbox=dict(facecolor='white', edgecolor='gray', alpha=0.7, boxstyle='round,pad=0.3')
+            )
+        elif model_name == 'LLaVA-One.' and x == 1:
+            # LLaVA-One ở x=1 nằm bên trái
+            plt.text(
+                x - 0.08, value, f'{value:.4f}',
+                ha='right', va='center',
+                fontsize=10, color=color, fontweight='bold',
+                bbox=dict(facecolor='white', edgecolor='gray', alpha=0.7, boxstyle='round,pad=0.3')
+            )
+        elif model_name == 'LLaVA-Next.' and x == 3:
+            # LLaVA-Next ở x=3 nằm bên trái
+            plt.text(
+                x - 0.08, value, f'{value:.4f}',
+                ha='right', va='center',
+                fontsize=10, color=color, fontweight='bold',
+                bbox=dict(facecolor='white', edgecolor='gray', alpha=0.7, boxstyle='round,pad=0.3')
+            )
+        elif model_name == 'LLaVA-One.' and x == 2:
+            # LLaVA-One ở x=2 nằm bên trái
+            plt.text(
+                x - 0.08, value, f'{value:.4f}',
+                ha='right', va='center',
+                fontsize=10, color=color, fontweight='bold',
+                bbox=dict(facecolor='white', edgecolor='gray', alpha=0.7, boxstyle='round,pad=0.3')
+            )
+        elif model_name == 'LLaVA-Next.' and x == 2:
+            # LLaVA-Next ở x=2 nằm phía dưới
+            plt.text(
+                x, value - 0.015, f'{value:.4f}',
+                ha='center', va='top',
+                fontsize=10, color=color, fontweight='bold',
+                bbox=dict(facecolor='white', edgecolor='gray', alpha=0.7, boxstyle='round,pad=0.3')
+            )
+        elif model_name == 'LLaVA-Next.' and x in [4, 5]:
+            # LLaVA-Next ở x=4,5 nằm bên trái
+            plt.text(
+                x - 0.08, value, f'{value:.4f}',
+                ha='right', va='center',
+                fontsize=10, color=color, fontweight='bold',
+                bbox=dict(facecolor='white', edgecolor='gray', alpha=0.7, boxstyle='round,pad=0.3')
+            )
+        elif model_name == 'LLaVA-One.' and x in [4, 5]:
+            # LLaVA-One ở x=4,5 nằm phía dưới
+            plt.text(
+                x, value - 0.015, f'{value:.4f}',
+                ha='center', va='top',
+                fontsize=10, color=color, fontweight='bold',
+                bbox=dict(facecolor='white', edgecolor='gray', alpha=0.7, boxstyle='round,pad=0.3')
+            )
+        else:
+            # Các trường hợp còn lại đặt phía dưới
+            plt.text(
+                x, value - 0.015, f'{value:.4f}',
+                ha='center', va='top',
+                fontsize=10, color=color, fontweight='bold',
+                bbox=dict(facecolor='white', edgecolor='gray', alpha=0.7, boxstyle='round,pad=0.3')
+            )
 
 # Trang trí
-plt.xlabel('Number of Adversarial Images', fontsize=16)  # Tăng từ 14 lên 16
-plt.ylabel('Mean End-to-End Score across Top-k', fontsize=16)  # Tăng từ 14 lên 16
+plt.xlabel('Number of Adversarial Images', fontsize=16)
+plt.ylabel('Mean End-to-End Score across Top-k', fontsize=16)
 plt.grid(True, linestyle='--', alpha=0.6)
 plt.xticks(injects)
 plt.ylim(0.55, 0.95)
 
 # Legend với font size phù hợp
-plt.legend(frameon=True, loc='upper right', fontsize=16)
+plt.legend(frameon=True, loc='upper right', fontsize=14)
 plt.tight_layout()
 
 # plt.show()
 save_path = f"visualization/std{0.05}_number_injection.pdf"
-plt.savefig(save_path, dpi=300, bbox_inches='tight')  # Thêm bbox_inches='tight' để tối ưu hóa
+plt.savefig(save_path, dpi=300, bbox_inches='tight')
