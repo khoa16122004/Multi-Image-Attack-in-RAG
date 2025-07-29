@@ -129,7 +129,7 @@ plt.rc('axes', labelsize=20)
 def main(args):
     models = {
         "llava-one": "LLaVA-One.",
-        # "llava-next": "LLaVA-Next.",
+        "llava-next": "LLaVA-Next.",
         # "deepseek-vl2-tiny": "DeepSeekVL2",
         # "qwenvl2.5": "Qwen2.5VL"
     }
