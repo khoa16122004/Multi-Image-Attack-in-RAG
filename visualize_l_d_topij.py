@@ -99,7 +99,7 @@ def main(args):
     handles, labels = ax[0][0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.05), 
                ncol=len(n_k_list), frameon=True, fancybox=True, shadow=True, 
-               facecolor='white', framealpha=0.9, fontsize=14)
+               facecolor='white', framealpha=0.9, fontsize=20)
 
     plt.tight_layout()
     # Thêm space cho legend ở dưới
