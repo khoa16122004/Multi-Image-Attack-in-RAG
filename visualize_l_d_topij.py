@@ -134,7 +134,7 @@ def main(args):
         # "qwenvl2.5": "Qwen2.5VL"
     }
 
-    n_k_list = [1, 2, 3, 4, 5]
+    n_k_list = [1]
     colors = ['blue', 'green', 'red', 'orange', 'purple']
     linestyles = ['-', '--', '-', '-', '-']
     markers = ['s', '^', 'o', 'd', 'v']
