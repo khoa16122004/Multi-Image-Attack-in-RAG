@@ -8,7 +8,7 @@ from util import arkiv_proccess
 import matplotlib
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['ps.fonttype'] = 42
-plt.rc('legend', fontsize=20)
+plt.rc('legend', fontsize=14)
 plt.rc('xtick', labelsize=14)
 plt.rc('ytick', labelsize=14)
 plt.rc('axes', labelsize=20)
@@ -44,6 +44,7 @@ def main(args):
         
         for idx_nk, n_k in enumerate(n_k_list):
             full_score_0, full_score_1 = [], []
+
             try:
                 for sample_id in lines:
                     path = os.path.join(model_result_dir, str(sample_id), f"scores_{n_k}.pkl")
@@ -125,9 +126,14 @@ def main(args):
             ymin_1, ymax_1 = all_y_1.min() - 0.01, all_y_1.max() + 0.1
             ax[1][col].set_ylim(max(ymin_1, 0), min(ymax_1, 1))
 
-    # Tạo legend chung ở dưới cả figure
-    handles, labels = ax[0][0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.05), 
+    # Tạo legend chung ở dưới cả figure - thu thập từ tất cả subplots
+    all_handles, all_labels = [], []
+    for col in range(len(models)):
+        handles, labels = ax[0][col].get_legend_handles_labels()
+        all_handles.extend(handles)
+        all_labels.extend(labels)
+    
+    fig.legend(all_handles, all_labels, loc='lower center', bbox_to_anchor=(0.5, -0.05), 
                ncol=len(models), frameon=True, fancybox=True, shadow=True, 
                facecolor='white', framealpha=0.9, fontsize=14)
 
