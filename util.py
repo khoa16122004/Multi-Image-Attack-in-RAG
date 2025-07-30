@@ -235,7 +235,8 @@ class Evaluator:
         self.init_llm(args.llm)
         self.method = args.method
         self.target_answer = args.target_answer
-        self.output_dir = f"scores_target_answer={self.target_answer}_usingquestion={args.using_question}_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
+        # self.output_dir = f"scores_target_answer={self.target_answer}_usingquestion={args.using_question}_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
+        self.output_dir = f"adversarial_scores_target_answer={self.target_answer}_usingquestion={args.using_question}_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
         os.makedirs(self.output_dir, exist_ok=True)
     
 
@@ -352,7 +353,8 @@ class EvaluatorEachScore:
         self.init_llm(args.llm)
         self.method = args.method
         self.target_answer = args.target_answer
-        self.output_dir = f"each_topk_scores_target_answer={self.target_answer}_usingquestion={args.using_question}_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
+        # self.output_dir = f"each_topk_scores_target_answer={self.target_answer}_usingquestion={args.using_question}_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
+        self.output_dir = f"adversarial_each_topk_scores_target_answer={self.target_answer}_usingquestion={args.using_question}_llm={args.llm}_{args.method}_{args.retriever_name}_{args.reader_name}_{args.std}"
         os.makedirs(self.output_dir, exist_ok=True)
     
 
@@ -434,6 +436,38 @@ class EvaluatorEachScore:
             "clean_rate_topk": clean_rate_topk,
             "clean_mrr_topk": clean_mrr_topk,
         }
+    def cal_adversarial_metrics(self, sample_id, top_k):
+        question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
+
+        imgs_path = os.path.join(self.attack_result_path, str(sample_id))
+        adv_imgs = []
+        for i in range(self.n_k):
+            adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
+            adv_imgs.append(adv_img)
+
+        adv_sims = self.retriever(query, adv_imgs).cpu().tolist()
+        adv_sims = [s[0] for s in adv_sims]
+
+        all_imgs = retri_imgs + adv_imgs
+        all_sims = sims + adv_sims
+        sorted_indices = sorted(range(len(all_sims)), key=lambda i: all_sims[i], reverse=True)
+        clean_indices = set(range(len(retri_imgs))) 
+
+        topk_indices = sorted_indices[:top_k]
+        num_clean_in_topk = sum([1 for i in topk_indices if i not in clean_indices])
+        adv_rate_topk = num_clean_in_topk / top_k
+
+        ranks = []
+        for i in topk_indices:
+            if i not in clean_indices:
+                rank = topk_indices.index(i) + 1  # 1-based
+                ranks.append(1.0 / rank)
+        adv_mrr_topk = sum(ranks) / len(ranks) if ranks else 0.0
+
+        return {
+            "adversarial_topk_rate": adv_rate_topk,
+            "adversarial_MRR_topk": adv_mrr_topk,
+        }
     
         
     
@@ -447,7 +481,8 @@ class EvaluatorEachScore:
             else:
                 end_to_end = None
             
-            retrieval_performance = self.cal_clean_metrics(sample_id, topk)
+            # retrieval_performance = self.cal_clean_metrics(sample_id, topk)
+            retrieval_performance = self.cal_adversarial_metrics(sample_id, topk)
 
             
             if end_to_end:

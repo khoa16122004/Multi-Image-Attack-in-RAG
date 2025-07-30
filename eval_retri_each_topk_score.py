@@ -17,8 +17,8 @@ def main(args):
             )
             with open(score_file) as f:
                 data = json.load(f)
-                clean_rate_totals[k] += data["clean_rate_topk"]
-                clean_mrr_totals[k] += data["clean_mrr_topk"]
+                clean_rate_totals[k] += data["adversarial_topk_rate"]
+                clean_mrr_totals[k] += data["adversarial_MRR_topk"]
             
 
 

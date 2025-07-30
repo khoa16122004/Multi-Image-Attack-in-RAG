@@ -145,7 +145,7 @@ def main(args):
     print(f"✅ Results saved to {csv_path}")
     
     # Lưu ra file Excel với format đẹp hơn
-    excel_path = f"results_tables/final_results_std{args.std}.xlsx"
+    excel_path = f"final_results_std0.05.csv/final_results_std{args.std}.xlsx"
     with pd.ExcelWriter(excel_path, engine='openpyxl') as writer:
         df.to_excel(writer, sheet_name='Final_Results', index=False)
     print(f"✅ Results saved to {excel_path}")
