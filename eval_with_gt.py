@@ -58,6 +58,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str, default=".", help="Base directory to save evaluation results.")
     parser.add_argument("--retriever_name", type=str, default="clip", help="Name of the retriever.")
     parser.add_argument("--reader_name", type=str, default="llava-one", help="Name of the reader.")
+    parser.add_argument("--llm", type=str, choices=['gpt', 'llama', 'gemma'])
     args = parser.parse_args()
 
     # Khởi tạo các đối tượng cần thiết
