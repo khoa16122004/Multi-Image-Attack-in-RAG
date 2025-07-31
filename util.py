@@ -343,6 +343,7 @@ class EvaluatorEachScore:
         else:
             self.reader = None
             
+        # self.retriever = Retriever(args.retriever_name)
         self.retriever = Retriever(args.retriever_name)
         self.retriever_name = args.retriever_name
         self.reader_name = args.reader_name

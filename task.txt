@@ -1,0 +1,3 @@
+(3) Đem confusion matrix qua, viết lại text
+(1) Chạy lại zeroshot
+(2) evaluation lại gt
