@@ -389,7 +389,11 @@ class EvaluatorEachScore:
                 
         # end-to-end recall
         pred_ans = self.reader.image_to_text(question, sorted_imgs[:top_k])[0]
-        system_prompt, user_prompt = get_prompt_compare_answer(gt_answer=golden_answer, model_answer=pred_ans, question=question)
+        if self.target_answer == "gt_answer":
+            target_answer = answer
+        elif self.target_answer == "golden_answer":
+            target_answer = golden_answer
+        system_prompt, user_prompt = get_prompt_compare_answer(gt_answer=target_answer, model_answer=pred_ans, question=question)
         score_response = self.llm.text_to_text(system_prompt=system_prompt, prompt=user_prompt).strip()
         end_to_end_score = parse_score(score_response)        
 
@@ -398,8 +402,8 @@ class EvaluatorEachScore:
             "pred_answer": pred_ans,
             "original_answer": golden_answer,
             "resposne_score": score_response,
-            "parse_score": end_to_end_score
-            
+            "parse_score": end_to_end_score,
+            "gt_answer": answer
         }
 
         return data
