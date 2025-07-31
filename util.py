@@ -500,7 +500,34 @@ class EvaluatorEachScore:
                     json.dump(retrieval_performance, f, indent=4) 
             
             
-            
+    def eval_original_prediction(self, sample_id, top_k):
+        question, gt_answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
+
+        pred_answer = self.reader.image_to_text(question, retri_imgs[:top_k])[0]  # Sử dụng top-k hình ảnh để dự đoán
+
+        system_prompt, user_prompt = get_prompt_compare_answer(
+            gt_answer=gt_answer, model_answer=pred_answer, question=question
+        )
+        score_response = self.llm.text_to_text(system_prompt=system_prompt, prompt=user_prompt).strip()
+        score = parse_score(score_response)
+
+        result = {
+            "sample_id": sample_id,
+            "question": question,
+            "ground_truth": gt_answer,
+            "predicted_answer": pred_answer,
+            "response_score": score_response,
+            "parsed_score": score,
+        }
+
+        return result
+
+    def evaluate_original_predictions(self, sample_ids, top_k):
+        results = []
+        for sample_id in sample_ids:
+            result = self.eval_original_prediction(sample_id, top_k)
+            results.append(result)
+        return results        
         
 class VisualizerTopkResults:
     def __init__(self, args):
