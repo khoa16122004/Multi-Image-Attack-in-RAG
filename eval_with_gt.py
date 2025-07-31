@@ -1,3 +1,4 @@
+import os
 import json
 from util import DataLoader, get_prompt_compare_answer, parse_score
 from reader import Reader
@@ -48,14 +49,29 @@ def eval_with_gt(sample_ids, retriever, reader, loader, top_k=5):
 
 
 if __name__ == "__main__":
+    import argparse
+
+    # Thêm parser để nhận tham số từ dòng lệnh
+    parser = argparse.ArgumentParser(description="Evaluate predictions against ground truth (GT) without any attack.")
+    parser.add_argument("--retri_dir", type=str, required=True, help="Path to the retrieval directory.")
+    parser.add_argument("--run_file", type=str, required=True, help="Path to the file containing sample IDs.")
+    parser.add_argument("--output_dir", type=str, default=".", help="Base directory to save evaluation results.")
+    parser.add_argument("--retriever_name", type=str, default="clip", help="Name of the retriever.")
+    parser.add_argument("--reader_name", type=str, default="llava-one", help="Name of the reader.")
+    args = parser.parse_args()
+
     # Khởi tạo các đối tượng cần thiết
-    retriever = Retriever("clip")
-    reader = Reader("llava-one")
-    loader = DataLoader(retri_dir="path_to_retri_dir")
+    retriever = Retriever(args.retriever_name)
+    reader = Reader(args.reader_name)
+    loader = DataLoader(retri_dir=args.retri_dir)
 
     # Đọc danh sách sample ID từ file
-    with open("run.txt", "r") as f:
+    with open(args.run_file, "r") as f:
         sample_ids = [int(line.strip()) for line in f]
+
+    # Tạo thư mục lưu kết quả theo mô hình
+    model_output_dir = os.path.join(args.output_dir, f"clean_gt_{args.reader_name}")
+    os.makedirs(model_output_dir, exist_ok=True)
 
     # Chạy đánh giá cho từng top-k từ 1 đến 5
     for top_k in range(1, 6):
@@ -63,7 +79,7 @@ if __name__ == "__main__":
         results = eval_with_gt(sample_ids, retriever, reader, loader, top_k=top_k)
 
         # Lưu kết quả ra file JSON
-        output_file = f"eval_results_top{top_k}.json"
+        output_file = os.path.join(model_output_dir, f"eval_results_top{top_k}.json")
         with open(output_file, "w") as f:
             json.dump(results, f, indent=4)
 
