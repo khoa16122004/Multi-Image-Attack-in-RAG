@@ -554,7 +554,11 @@ class EvalProcessTableGT:
     def run(self, sample_id, n_k):                
         question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
         imgs_path = os.path.join(self.attack_result_path, str(sample_id))
-        self.reader.init_data(answer)
+        
+        if isinstance(answer, str): 
+            self.reader.init_data(answer)
+        else:
+            self.reader.init_data(answer[0])
         print(answer)
         adv_imgs = []    
         for i in range(self.n_k):
