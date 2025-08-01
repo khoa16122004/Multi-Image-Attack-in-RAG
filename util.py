@@ -565,7 +565,7 @@ class EvalProcessTableGT:
             adv_imgs.append(adv_img)
        
         scores = self.reader(question, [adv_imgs[:n_k]]) / self.reader(question, [retri_imgs[:n_k]])
-        return scores
+        return scores.cpu()
 
     def calculate_average_scores(self, sample_ids, n_k):
         """
