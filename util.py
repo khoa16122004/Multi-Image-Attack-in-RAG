@@ -529,7 +529,64 @@ class EvaluatorEachScore:
             result = self.eval_original_prediction(sample_id, top_k)
             results.append(result)
         return results        
+    
+    
+class EvalProcessTableGT:
+    def __init__(self, args):
+        self.reader = Reader(args.reader_name)
+        self.retriever = Retriever(args.retriever_name)
+        self.retriever_name = args.retriever_name
+        self.reader_name = args.reader_name
+        self.std = args.std
+        self.n_k = args.n_k
+        self.attack_result_path = args.attack_result_path
+        self.loader = DataLoader(retri_dir=args.result_clean_dir)
+        self.init_llm(args.llm)
+        self.method = args.method
+        self.target_answer = args.target_answer
+        os.makedirs(self.output_dir, exist_ok=True)
+
+    def init_llm(self, model_name):
+        if model_name == "llama":
+            self.llm = LlamaService("Llama-13b")
+        elif model_name == "gpt":
+            self.llm = GPTService("gpt-4o")
+
+    def run(self, sample_id, n_k):                
+        question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
+        imgs_path = os.path.join(self.attack_result_path, str(sample_id))
+        adv_imgs = []    
+        for i in range(self.n_k):
+            adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
+            adv_imgs.append(adv_img)
+        adv_sims = self.retriever(query, adv_imgs).cpu().tolist()
+        adv_sims = [item[0] for item in adv_sims]
+        all_imgs = retri_imgs + adv_imgs
+        all_sims = sims + adv_sims
+        sorted_indices = sorted(range(len(all_sims)), key=lambda i: all_sims[i], reverse=True)
+        sorted_imgs = [all_imgs[i] for i in sorted_indices]
+        scores = self.reader(question, [sorted_imgs[:n_k]]).cpu().tolist()
+        return scores
+
+    def calculate_average_scores(self, sample_ids, n_k):
+        """
+        Tính trung bình các mẫu dựa trên score.
+        """
+        all_scores = []
+        for sample_id in sample_ids:
+            scores = self.run(sample_id, n_k)
+            all_scores.append(scores)
+
+        # Tính trung bình
+        average_scores = np.mean(all_scores, axis=0)
+        return average_scores
         
+      
+
+
+
+    
+
 class VisualizerTopkResults:
     def __init__(self, args):
         self.reader = Reader(args.reader_name)
