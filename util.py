@@ -571,9 +571,9 @@ class EvalProcessTableGT:
         scores = score_adv / score_clean
         print(sample_id)
         # print(scores)
-        # if torch.isnan(scores).any():
-        #     raise
-        #     return None
+        if torch.isnan(scores).any():
+            # raise
+            return None
 
 
         return scores
