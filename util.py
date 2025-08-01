@@ -11,6 +11,7 @@ from tqdm import tqdm
 from llm_service import LlamaService, GPTService
 import re
 import matplotlib.patches as patches
+import torch
 
 def dominate(a, b):
     if a[0] < b[0] and a[1] < b[1]:
