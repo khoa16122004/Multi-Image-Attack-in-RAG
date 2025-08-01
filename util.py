@@ -559,7 +559,6 @@ class EvalProcessTableGT:
             self.reader.init_data(answer)
         else:
             self.reader.init_data(answer[0])
-        print(answer)
         adv_imgs = []    
         for i in range(self.n_k):
             adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
