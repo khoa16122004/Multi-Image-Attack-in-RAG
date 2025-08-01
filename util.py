@@ -570,14 +570,13 @@ class EvalProcessTableGT:
         score_clean = self.reader(question, [retri_imgs[:n_k]]).cpu() * 1e18
         scores = score_adv / score_clean
         print(sample_id)
-        print(scores)
-        if torch.isnan(scores).any():
-            raise
-            return None
+        # print(scores)
+        # if torch.isnan(scores).any():
+        #     raise
+        #     return None
 
-        score_adv /= score_clean
-        print(score_adv)
-        return score_adv
+
+        return scores
 
 
     def calculate_average_scores(self, sample_ids, n_k):
