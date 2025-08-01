@@ -555,7 +555,7 @@ class EvalProcessTableGT:
         question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
         imgs_path = os.path.join(self.attack_result_path, str(sample_id))
         self.reader.init_data(answer)
-        
+        print(answer)
         adv_imgs = []    
         for i in range(self.n_k):
             adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
