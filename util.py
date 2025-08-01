@@ -566,10 +566,11 @@ class EvalProcessTableGT:
        
         score_adv = self.reader(question, [adv_imgs]).cpu() * 10e17
         score_clean = self.reader(question, [retri_imgs[:n_k]]).cpu() * 10e17
-        print(score_adv)
-        print(score_clean)
-        raise
-        return scores
+        score_adv /= score_clean
+        # print(score_adv)
+        # print(score_clean)
+        # raise
+        return score_adv
 
     def calculate_average_scores(self, sample_ids, n_k):
         """
