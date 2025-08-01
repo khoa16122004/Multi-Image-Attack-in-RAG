@@ -570,6 +570,7 @@ class EvalProcessTableGT:
         score_clean = self.reader(question, [retri_imgs[:n_k]]).cpu() * 1e18
 
         if torch.isnan(score_adv).any() or torch.isnan(score_clean).any():
+            raise
             return None
 
         score_adv /= score_clean
