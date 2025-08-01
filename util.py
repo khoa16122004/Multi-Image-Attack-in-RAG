@@ -569,7 +569,7 @@ class EvalProcessTableGT:
         score_adv = self.reader(question, [adv_imgs]).cpu() * 1e18
         score_clean = self.reader(question, [retri_imgs[:n_k]]).cpu() * 1e18
         scores = score_adv / score_clean
-        print(sample_id)
+        # print(sample_id)
         # print(scores)
         if torch.isnan(scores).any():
             # raise
