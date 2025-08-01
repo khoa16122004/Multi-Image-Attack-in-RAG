@@ -544,7 +544,6 @@ class EvalProcessTableGT:
         self.init_llm(args.llm)
         self.method = args.method
         self.target_answer = args.target_answer
-        os.makedirs(self.output_dir, exist_ok=True)
 
     def init_llm(self, model_name):
         if model_name == "llama":
@@ -555,6 +554,8 @@ class EvalProcessTableGT:
     def run(self, sample_id, n_k):                
         question, answer, query, gt_basenames, retri_basenames, retri_imgs, sims = self.loader.take_retri_data(sample_id)
         imgs_path = os.path.join(self.attack_result_path, str(sample_id))
+        self.reader.init_data(answer)
+        
         adv_imgs = []    
         for i in range(self.n_k):
             adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
