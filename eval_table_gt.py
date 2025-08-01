@@ -13,7 +13,7 @@ def main():
     parser.add_argument("--llm", type=str, required=True, choices=["llama", "gpt"], help="Tên của mô hình LLM.")
     parser.add_argument("--method", type=str, required=True, help="Phương pháp được sử dụng.")
     parser.add_argument("--target_answer", type=str, required=True, help="Loại câu trả lời mục tiêu.")
-    parser.add_argument("--run_file", type=int, nargs="+", required=True, help="Danh sách các sample ID.")
+    parser.add_argument("--run_file", type=str, nargs="+", required=True, help="Danh sách các sample ID.")
 
     args = parser.parse_args()
     with open(args.run_file, "r") as f:
