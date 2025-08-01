@@ -559,19 +559,22 @@ class EvalProcessTableGT:
             self.reader.init_data(answer)
         else:
             self.reader.init_data(answer[0])
+        
         adv_imgs = []    
         for i in range(self.n_k):
             adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
             adv_imgs.append(adv_img)
-       
-        score_adv = self.reader(question, [adv_imgs]).cpu() * 10e17
-        score_clean = self.reader(question, [retri_imgs[:n_k]]).cpu() * 10e17
+        
+        score_adv = self.reader(question, [adv_imgs]).cpu() * 1e18
+        score_clean = self.reader(question, [retri_imgs[:n_k]]).cpu() * 1e18
+
+        if torch.isnan(score_adv).any() or torch.isnan(score_clean).any():
+            return None
+
         score_adv /= score_clean
         print(score_adv)
-        # print(score_adv)
-        # print(score_clean)
-        # raise
         return score_adv
+
 
     def calculate_average_scores(self, sample_ids, n_k):
         """
@@ -580,7 +583,8 @@ class EvalProcessTableGT:
         all_scores = []
         for sample_id in sample_ids:
             scores = self.run(sample_id, n_k)
-            all_scores.append(scores)
+            if scores:
+                all_scores.append(scores)
 
         # Tính trung bình
         average_scores = np.mean(all_scores, axis=0)
