@@ -564,8 +564,12 @@ class EvalProcessTableGT:
             adv_img = pickle.load(open(os.path.join(imgs_path, f"adv_{i + 1}.pkl"), "rb"))
             adv_imgs.append(adv_img)
        
-        scores = self.reader(question, [adv_imgs[:n_k]]) / self.reader(question, [retri_imgs[:n_k]])
-        return scores.cpu()
+        score_adv = self.reader(question, [adv_imgs[:n_k]]).cpu()
+        score_clean = self.reader(question, [retri_imgs[:n_k]]).cpu()
+        print(score_adv)
+        print(score_clean)
+        raise
+        return scores
 
     def calculate_average_scores(self, sample_ids, n_k):
         """
