@@ -13,15 +13,16 @@ def main():
     parser.add_argument("--llm", type=str, required=True, choices=["llama", "gpt"], help="Tên của mô hình LLM.")
     parser.add_argument("--method", type=str, required=True, help="Phương pháp được sử dụng.")
     parser.add_argument("--target_answer", type=str, required=True, help="Loại câu trả lời mục tiêu.")
-    parser.add_argument("--sample_ids", type=int, nargs="+", required=True, help="Danh sách các sample ID.")
+    parser.add_argument("--run_file", type=int, nargs="+", required=True, help="Danh sách các sample ID.")
 
     args = parser.parse_args()
-
+    with open(args.run_file, "r") as f:
+        sample_ids = [int(line.strip()) for line in f]
     # Khởi tạo evaluator
     evaluator = EvalProcessTableGT(args)
 
     # Tính trung bình các mẫu dựa trên score
-    average_scores = evaluator.calculate_average_scores(args.sample_ids, args.n_k)
+    average_scores = evaluator.calculate_average_scores(sample_ids, args.n_k)
     print("Average Scores:", average_scores)
 
 if __name__ == "__main__":
