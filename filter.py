@@ -24,7 +24,7 @@ attack_result_dir = f"attack_result_usingquestion=1/clip_{model_name}_0.05"
 for sample_id in sample_ids:
     for k in range(1, max_topk + 1):
         question, gt_answer, query, gt_basenames, retri_basenames, retri_imgs, sims = loader.take_retri_data(sample_id)
-        with open(os.path.join(attack_result_dir, str(sample_id), f"answers_{k}.json", "r")) as f:
+        with open(os.path.join(attack_result_dir, str(sample_id), f"answers_{k}.json"), "r") as f:
             data = json.load(f)
             golden_answer = data['golden_answer']
         print(golden_answer)
