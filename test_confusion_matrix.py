@@ -12,14 +12,16 @@ plt.rc('axes', labelsize=20)
 
 # Adversarial data
 llava_one_adv = np.array([
+    [1, 1, 1, 1, 1],
     [0.64, 0.69, 0.775, 0.74, 0.795],
     [0.625, 0.685, 0.73, 0.71, 0.715],
-    [0.57, 0.635, 0.6383, 0.65, 0.675],
+    [0.57, 0.635, 0.63, 0.65, 0.675],
     [0.575, 0.615, 0.625, 0.645, 0.665],
     [0.57, 0.605, 0.625, 0.64, 0.66],
 ])
 
 llava_next_adv = np.array([
+    [1, 1, 1, 1, 1],
     [0.71, 0.665, 0.69, 0.795, 0.73],
     [0.675, 0.65, 0.7, 0.705, 0.725],
     [0.6, 0.585, 0.645, 0.705, 0.77],
@@ -28,6 +30,7 @@ llava_next_adv = np.array([
 ])
 
 qwenvl2_adv = np.array([
+    [1, 1, 1, 1, 1],
     [0.925, 0.805, 0.775, 0.865, 0.87],
     [0.86, 0.865, 0.785, 0.78, 0.85],
     [0.83, 0.81, 0.87, 0.855, 0.85],
@@ -36,6 +39,7 @@ qwenvl2_adv = np.array([
 ])
 
 deepseek_vl2_adv = np.array([
+    [1, 1, 1, 1, 1],
     [0.75, 0.705, 0.75, 0.8, 0.77],
     [0.625, 0.725, 0.715, 0.69, 0.75],
     [0.61, 0.665, 0.685, 0.7, 0.715],
@@ -93,36 +97,44 @@ models_data = {
 }
 
 # Create custom colormap - smaller values = darker colors
-cmap = plt.cm.Reds_r
+cmap = plt.cm.bwr_r
 
 fig, axs = plt.subplots(2, 2, figsize=(16, 12))
 axs = axs.flatten()
 
 def add_small_rectangles(ax, data_rand, cmap, vmin, vmax):
     """Add small rectangles for random data in bottom-right corner of each cell"""
-    for i in range(data_rand.shape[0]):
+    for i in range(data_rand.shape[0]):  # Start from row 1
         for j in range(data_rand.shape[1]):
-            # Normalize the random data value using unified scale
             norm_val = (data_rand[i, j] - vmin) / (vmax - vmin)
-            color = cmap(norm_val)  # Reverse mapping so smaller values = darker
+            color = cmap(norm_val)
+            brightness = 0.299 * color[0] + 0.587 * color[1] + 0.114 * color[2]
+            if data_rand[i, j] > 0.87:
+                text_color = 'white'
+            else:
+                text_color = 'black'
+
             
-            rect = Rectangle((j + 0.6, i + 0.7), 0.4, 0.25, 
+            
+            rect = Rectangle((j + 0.52, i + 1 + 0.7), 0.48, 0.3, 
                             facecolor=color, edgecolor='white', linewidth=1)
             ax.add_patch(rect)
 
-            # Vị trí chữ cũng điều chỉnh theo
-            ax.text(j + 0.8, i + 0.825, f'{data_rand[i, j]:.3f}', 
-                    ha='center', va='center', fontsize=12, color='black')
+            ax.text(j + 0.775, i + 1 + 0.85, f'{data_rand[i, j]*100:.1f}', 
+                    ha='center', va='center', fontsize=14, color=text_color)
 for ax, (name, (data_adv, data_rand)) in zip(axs, models_data.items()):
     # Create main heatmap with adversarial data
+    labels = np.vectorize(lambda x: f'{x*100:.1f}')(data_adv)
+
     sns.heatmap(
         data_adv,
-        annot=True,
-        fmt=".3f",
+        annot=labels,
+        # fmt=".3f",
+        fmt="",
         cmap=cmap,
-        annot_kws={"size": 16},
-        xticklabels=[1, 2, 3, 4, 5],
-        yticklabels=[1, 2, 3, 4, 5],
+        annot_kws={"size": 24},
+        xticklabels=[0, 1, 2, 3, 4, 5],
+        yticklabels=[0, 1, 2, 3, 4, 5],
         cbar=False,
         ax=ax,
         vmin=vmin,
