@@ -7,7 +7,7 @@ from tqdm import tqdm
 from tqdm import tqdm
 
 max_topk = 5
-model_name = "llava-one"
+model_name = "deepseek-vl2-tiny"
 clean_dir = f"clean_result/{model_name}"
 run_path = "run.txt"
 with open(run_path, "r") as f:
