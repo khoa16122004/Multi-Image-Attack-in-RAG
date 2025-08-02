@@ -3,7 +3,7 @@ from llm_service import GPTService
 from reader import Reader
 import os
 import json
-
+from tqdm import tqdm
 
 max_topk = 5
 model_name = "llava-one"
@@ -22,7 +22,7 @@ loader = DataLoader(
 
 attack_result_dir = f"attack_result_usingquestion=1/clip_{model_name}_0.05"
 model_dir = os.path.join(output_dir, f"{model_name}")
-for sample_id in sample_ids:
+for sample_id in tqdm(sample_ids):
     sample_dir = os.path.join(model_dir, str(sample_id))
     os.makedirs(sample_dir, exist_ok=True)
     for k in range(1, max_topk + 1):
@@ -47,5 +47,5 @@ for sample_id in sample_ids:
         with open(output_file_path, "w") as output_file:
             json.dump(output_data, output_file, indent=4)
         
-        raise
+        # raise
 
