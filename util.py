@@ -171,7 +171,7 @@ def get_prompt_compare_answer(gt_answer, model_answer, question):
         "the keywords or similar expressions (including similar color), without any additional guessed "
         "information, it is full correct. If the student answer have missed some important part in the reference "
         "answer, please assign partial score. Usually, when there are 2 key features and only 1 is being "
-        "answered, assign 0.5 score; if there are more than 2 key features, adjust partial score by ratio of "
+        "answered, assign 0.5 score or create a feature that nearly corresponds to the key feature; if there are more than 2 key features, adjust partial score by ratio of "
         "correctly answered key feature. The reference answer can be in the form of a Python list, in this case, "
         "any one of the list item is correct. "
         "If student answer contain irrelevant information not related to question, mark it with “Redundant”, but "
