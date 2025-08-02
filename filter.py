@@ -19,7 +19,7 @@ loader = DataLoader(
 )
 # reader = Reader(reader_name="llava-one")
 
-attack_result_dir = "attack_result_usingquestion=1/clip_{model_name}s_0.05"
+attack_result_dir = f"attack_result_usingquestion=1/clip_{model_name}s_0.05"
 
 for sample_id in sample_ids:
     for k in range(1, max_topk + 1):
