@@ -1,5 +1,5 @@
-from util import DataLoader
-from llm_service import GPTService, get_prompt_compare_answer, parse_score
+from util import DataLoader, get_prompt_compare_answer, parse_score
+from llm_service import GPTService
 from reader import Reader
 import os
 import json
