@@ -4,6 +4,7 @@ from reader import Reader
 import os
 import json
 from tqdm import tqdm
+from tqdm import tqdm
 
 max_topk = 5
 model_name = "llava-one"
@@ -13,8 +14,8 @@ with open(run_path, "r") as f:
     sample_ids = [int(line.strip()) for line in f]   
 
 scores_topk = [0, 0, 0, 0, 0]
-for k in range(1, max_topk + 1):
-    for i in range(sample_ids):
+for k in tqdm(range(1, max_topk + 1)):
+    for i in sample_ids:
         answer_path = os.path.join(clean_dir, str(i), f"answers_top{k}.json")
         if not os.path.exists(answer_path):
             raise
