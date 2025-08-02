@@ -6,8 +6,9 @@ import argparse
 
 def main(args):
     totals = np.zeros(5, dtype=float)
-
-    sample_list = os.listdir(args.extracted_path)
+    with open(args.run_path, "r") as f:
+        sample_list = [int(line.strip()) for line in f]  
+    
     for sample_id in tqdm(sample_list):
         for k in range(5):
             score_file = os.path.join(
@@ -27,4 +28,5 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--n_k", type=int, required=True)
     p.add_argument("--extracted_path", type=str, required=True)
+    p.add_argument("--run_path", type=str, required=True)
     main(p.parse_args())
