@@ -15,7 +15,7 @@ llm = GPTService("gpt-4o")
 output_dir = "clean_result"
 # os.makedirs(output_dir, eexist_ok=True)
 loader = DataLoader(
-    retri_dir=r"result_usingquery\=0_clip",
+    retri_dir=r"result_usingquery=0_clip",
 )
 # reader = Reader(reader_name="llava-one")
 
