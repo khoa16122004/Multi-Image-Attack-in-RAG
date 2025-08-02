@@ -24,6 +24,7 @@ attack_result_dir = f"attack_result_usingquestion=1/clip_{model_name}_0.05"
 model_dir = os.path.join(output_dir, f"{model_name}")
 for sample_id in sample_ids:
     sample_dir = os.path.join(model_dir, str(sample_id))
+    os.makedirs(sample_dir, exist_ok=True)
     for k in range(1, max_topk + 1):
         top_k_path = os.path.join(sample_dir, f"eval_results_top{k}.json")
         question, gt_answer, query, gt_basenames, retri_basenames, retri_imgs, sims = loader.take_retri_data(sample_id)
@@ -42,7 +43,7 @@ for sample_id in sample_ids:
         }
         
         # Save the output data to a JSON file
-        output_file_path = os.path.join(output_dir, f"sample_{sample_id}_top{k}.json")
+        output_file_path = os.path.join(sample_dir, f"sample_{sample_id}_top{k}.json")
         with open(output_file_path, "w") as output_file:
             json.dump(output_data, output_file, indent=4)
         
