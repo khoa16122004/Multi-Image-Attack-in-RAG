@@ -7,7 +7,7 @@ import argparse
 def main(args):
     totals = np.zeros(5, dtype=float)
     with open(args.run_path, "r") as f:
-        sample_list = [int(line.strip()) for line in f]  
+        sample_list = [line.strip() for line in f]  
     
     for sample_id in tqdm(sample_list):
         for k in range(5):
