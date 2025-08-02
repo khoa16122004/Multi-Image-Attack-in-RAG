@@ -6,7 +6,7 @@ import json
 from tqdm import tqdm
 
 max_topk = 5
-model_name = "llava-one"
+model_name = "llava-next"
 retri_dir = r"result_usingquery=0_clip"
 attack_result_dir = f"attack_result_usingquestion=1/clip_{model_name}"
 run_path = "run.txt"
