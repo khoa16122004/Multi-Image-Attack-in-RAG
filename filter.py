@@ -21,10 +21,11 @@ loader = DataLoader(
 # reader = Reader(reader_name="llava-one")
 
 attack_result_dir = f"attack_result_usingquestion=1/clip_{model_name}_0.05"
-model_dir = os.path.join(output_dir, f"clean_gt_{model_name}")
+model_dir = os.path.join(output_dir, f"{model_name}")
 for sample_id in sample_ids:
+    sample_dir = os.path.join(model_dir, str(sample_id))
     for k in range(1, max_topk + 1):
-        top_k_path = os.path.join(model_dir, f"eval_results_top{k}.json")
+        top_k_path = os.path.join(sample_dir, f"eval_results_top{k}.json")
         question, gt_answer, query, gt_basenames, retri_basenames, retri_imgs, sims = loader.take_retri_data(sample_id)
         with open(os.path.join(attack_result_dir, str(sample_id), f"answers_{k}.json"), "r") as f:
             data = json.load(f)
