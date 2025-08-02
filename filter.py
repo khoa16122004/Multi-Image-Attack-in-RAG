@@ -43,7 +43,7 @@ for sample_id in sample_ids:
         }
         
         # Save the output data to a JSON file
-        output_file_path = os.path.join(sample_dir, f"sample_{sample_id}_top{k}.json")
+        output_file_path = os.path.join(sample_dir, f"answers_top{k}.json")
         with open(output_file_path, "w") as output_file:
             json.dump(output_data, output_file, indent=4)
         
