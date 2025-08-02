@@ -1,41 +1,27 @@
+from util import DataLoader, get_prompt_compare_answer, parse_score
+from llm_service import GPTService
+from reader import Reader
 import os
 import json
+from tqdm import tqdm
 
-def calculate_average_score(output_dir):
-    average_scores = {}
-    top_scores = {}  # Dictionary to store scores for each top-k level
-    for sample_id in os.listdir(output_dir):
-        sample_path = os.path.join(output_dir, sample_id)
-        if not os.path.isdir(sample_path):
-            continue
-        
-        total_score = 0
-        count = 0
-        top_scores[sample_id] = []  # Initialize list for top-k scores
-        for k in range(1, 6):  # Loop from top1 to top5
-            file_name = f"answers_top{k}.json"
-            file_path = os.path.join(sample_path, file_name)
-            if os.path.exists(file_path):
-                with open(file_path, "r") as f:
-                    data = json.load(f)
-                    score = data.get("parse_score", 0)
-                    top_scores[sample_id].append(score)
-                    total_score += score
-                    count += 1
-        
-        if count > 0:
-            average_scores[sample_id] = total_score / count
-    
-    # Save the average scores to a JSON file
-    average_score_file = os.path.join(output_dir, "average_scores.json")
-    with open(average_score_file, "w") as f:
-        json.dump(average_scores, f, indent=4)
-    print(f"Average scores saved to {average_score_file}")
-    
-    # Print the list of scores from top1 to top5 for each sample_id
-    for sample_id, scores in top_scores.items():
-        print(f"Sample ID {sample_id}: {scores}")
+max_topk = 5
+model_name = "llava-one"
+clean_dir = f"clean_result/{model_name}"
+run_path = "run.txt"
+with open(run_path, "r") as f:
+    sample_ids = [int(line.strip()) for line in f]   
 
-# Run the function
-output_dir = "clean_result"  # Ensure this matches the output directory used in filter.py
-calculate_average_score(output_dir)
+scores_topk = [0, 0, 0, 0, 0]
+for k in range(1, max_topk + 1):
+    for i in range(sample_ids):
+        answer_path = os.path.join(clean_dir, str(i), f"answers_top{k}.json")
+        if not os.path.exists(answer_path):
+            raise
+        with open(answer_path, "r") as f:
+            data = json.load(f)
+            score = data['parse_score']
+            scores_topk[k - 1] += score
+            
+
+print(scores_topk)   
